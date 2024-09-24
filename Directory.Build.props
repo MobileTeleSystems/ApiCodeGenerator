@@ -1,0 +1,21 @@
+﻿<Project>
+  <PropertyGroup>
+    <Authors>MTS Digital, Gennady Pundikov</Authors>
+    <RepositoryUrl>https://github.com/MobileTeleSystems/ApiCodeGenerator</RepositoryUrl>
+    <CodeAnalysisRuleSet>$(SolutionDir)ApiCodeGenerator.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>12</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NswagVersion>14.0.2</NswagVersion>
+    <NJsonSchemaVersion>11.0.2</NJsonSchemaVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

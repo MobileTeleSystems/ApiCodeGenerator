@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0;net8.0;netstandard2.0</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+    <!--Параметры пакета в Directory.Build.targets-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="build/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Properties\testSchema.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\ApiCodeGenerator.Core\bin\$(Configuration)\netstandard2.0\ApiCodeGenerator.Core.dll" Link="ApiCodeGenerator.Core.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ApiCodeGenerator.Abstraction\ApiCodeGenerator.Abstraction.csproj" />
+  </ItemGroup>
+
+  <Import Project="./ApiCodeGenerator.MSBuild.Console.targets" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
+  <Import Project="./ApiCodeGenerator.MSBuild.Task.targets" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+
+</Project>

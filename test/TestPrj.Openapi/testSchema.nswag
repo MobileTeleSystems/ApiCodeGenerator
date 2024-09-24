@@ -1,0 +1,18 @@
+﻿{
+  "runtime": "NetCore31",
+  "documentGenerator": {
+    "fromDocument": {
+      "json": "$(InputJson)",
+      "url": "http://basketService/swagger/v1/swagger.json",
+      "output": null
+    }
+  },
+  "codeGenerators": {
+    "OpenApiToCSharpClient": {
+      "namespace": "TestNs",
+      "className": "TestClient",
+      "generateClientInterfaces": true,
+      "jsonLibrary": "SystemTextJson"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+
+  <ItemGroup>
+    <Reference Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..))\tools\ApiCodeGenerator.*.dll">
+      <Private>false</Private>
+      <!-- hide these from Assemblies view in Solution Explorer, they will be shown under packages -->
+      <Visible>false</Visible>
+      <NuGetPackageId>$(ACGPackageId)</NuGetPackageId>
+      <NuGetPackageVersion>$(ACGPackageVersion)</NuGetPackageVersion>
+    </Reference>
+    <Reference Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..))\tools\NJsonSchema*.dll">
+      <!-- Private = false to make these reference only -->
+      <Private>false</Private>
+      <!-- hide these from Assemblies view in Solution Explorer, they will be shown under packages -->
+      <Visible>false</Visible>
+      <NuGetPackageId>$(ACGPackageId)</NuGetPackageId>
+      <NuGetPackageVersion>$(ACGPackageVersion)</NuGetPackageVersion>
+    </Reference>
+    <Reference Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..))\tools\NSwag.*.dll">
+      <!-- Private = false to make these reference only -->
+      <Private>false</Private>
+      <!-- hide these from Assemblies view in Solution Explorer, they will be shown under packages -->
+      <Visible>false</Visible>
+      <NuGetPackageId>$(ACGPackageId)</NuGetPackageId>
+      <NuGetPackageVersion>$(ACGPackageVersion)</NuGetPackageVersion>
+    </Reference>
+    <Reference Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..))\tools\Fluid.dll">
+      <!-- Private = false to make these reference only -->
+      <Private>false</Private>
+      <!-- hide these from Assemblies view in Solution Explorer, they will be shown under packages -->
+      <Visible>false</Visible>
+      <NuGetPackageId>$(ACGPackageId)</NuGetPackageId>
+      <NuGetPackageVersion>$(ACGPackageVersion)</NuGetPackageVersion>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="GeneratePropsFile" BeforeTargets="_GetPackageFiles">
+    <WriteLinesToFile File="$(IntermediateOutputPath)build.props" Overwrite="true"
+      Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;Project ToolsVersion=&quot;15.0&quot; xmlns=&quot;http://schemas.microsoft.com/developer/msbuild/2003&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;AcgExtensionAssemblies&gt;%24%28AcgExtensionAssemblies%29%3B%24%28MSBuildThisFileDirectory%29../tools/$(TargetFileName)&lt;/AcgExtensionAssemblies&gt;
+  &lt;/PropertyGroup&gt;
+&lt;/Project&gt;" />
+
+    <ItemGroup>
+      <_PackageFiles Include="$(IntermediateOutputPath)build.props" PackagePath="build\$(PackageId).props" Pack="true" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateToolsOutput" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <_PackageFiles Include="@(_BuildOutputInPackage)" PackagePath="tools\%(_BuildOutputInPackage.TargetPath)" Pack="true" />
+      <_BuildOutputInPackage Remove="@(_BuildOutputInPackage)" />
+    </ItemGroup>
+  </Target>
+</Project>

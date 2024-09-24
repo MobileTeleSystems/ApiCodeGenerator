@@ -1,0 +1,9 @@
+﻿<Project>
+  <Target Name="SetNuspecProps" BeforeTargets="GenerateNuspec" Condition="'$(IsPackable)' == 'true'">
+    <PropertyGroup>
+      <PackageId Condition="'$(PackageId)' == ''">$(AssemblyName)</PackageId>
+      <NuspecFile Condition="'$(NuspecFile)' == ''">$(AssemblyName).nuspec</NuspecFile>
+      <NuspecProperties>id=$(PackageId);version=$(PackageVersion);author=$(Authors);configuration=$(Configuration);repository=$(RepositoryUrl);nswagVersion=$(NswagVersion)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

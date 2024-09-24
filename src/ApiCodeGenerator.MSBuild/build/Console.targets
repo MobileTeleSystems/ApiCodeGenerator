@@ -1,0 +1,75 @@
+<Project>
+  <!-- Запрашиваем список установленных сред выполнения .NET и выбираем поддерживаемую -->
+  <Target Name="SelectGeneratorRuntime"
+    BeforeTargets="_GetMetadataForOpenApiReferences">
+    <Exec Command="dotnet --list-runtimes"
+      LogStandardErrorAsError="true"
+      ConsoleToMsBuild="true"
+      StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput"
+        ItemName="_AcgDotnetRuntimes" />
+    </Exec>
+
+    <ItemGroup>
+      <_AcgDotnetRuntimes>
+        <!-- ищем установленный рантайм приложений заменяя его префикс и берем первые 6 символов
+        чтоб получить например net6.0 -->
+        <Folder>$([System.String]::Copy('%(Identity)').Replace('Microsoft.NETCore.App ','net').Substring(0,6))</Folder>
+        <NswagFolder>$([System.String]::Copy('%(Identity)').Replace('Microsoft.NETCore.App ', 'Net').Substring(0,6).Replace('.', ''))</NswagFolder>
+      </_AcgDotnetRuntimes>
+      <ttt Include="@(_AcgDotnetRuntimes)">
+        <t>$(__AcgToolsDir)%(_AcgDotnetRuntimes.Folder)</t>
+      </ttt>
+      <_AcgTools Include="$(__AcgToolsDir)%(_AcgDotnetRuntimes.Folder)"
+        Condition="Exists('$(__AcgToolsDir)%(_AcgDotnetRuntimes.Folder)') AND Exists('$(NSwagDir)../%(_AcgDotnetRuntimes.NswagFolder)')">
+        <NswagToolDir>$(NSwagDir)../%(_AcgDotnetRuntimes.NswagFolder)</NswagToolDir>
+      </_AcgTools>
+      <!-- проставляем на все ссылки пути к инструментам -->
+      <OpenApiReference>
+        <AcgToolDir>%(_AcgTools.Identity)</AcgToolDir>
+        <AcgNswagToolDir>%(_AcgTools.NswagToolDir)</AcgNswagToolDir>
+      </OpenApiReference>
+    </ItemGroup>
+
+    <Error Condition="!Exists('%(_AcgTools.NswagToolDir)')"
+      Text="Nswag tools not found (%(_AcgTools.NswagToolDir)). ApiCodeGenerator tool in %(_AcgTools.Identity)" />
+  </Target>
+
+  <Target Name="GenerateAcg">
+    <PropertyGroup>
+      <OptionsFileDir>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetFullPath('%(CurrentOpenApiReference.Options)'))))</OptionsFileDir>
+      <AcgNswagBase Condition="'$(AcgNswagBase)' == ''">$([MSBuild]::GetPathOfFileAbove('$(AcgNswagBaseFileName)', '$(OptionsFileDir)'))</AcgNswagBase>
+      <__AcgNswagToolDir>%(CurrentOpenApiReference.AcgNswagToolDir)</__AcgNswagToolDir>
+      <AcgBuiltInExtensionAssemblies>%(CurrentOpenApiReference.AcgToolDir)/../ApiCodeGenerator.OpenApi.dll;%(AcgToolDir)/../ApiCodeGenerator.AsyncApi.dll;</AcgBuiltInExtensionAssemblies>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <__acgBiExtAssemblies Include="$(AcgBuiltInExtensionAssemblies)" />
+      <__acgNotExistsBiExtAssemblies Include="@(__acgBiExtAssemblies)" Condition="!Exists(%(__acgBiExtAssemblies.Identity))" />
+      <__acgExtAssemblies Include="@(__acgBiExtAssemblies)" Condition="Exists(%(__acgBiExtAssemblies.Identity))" />
+      <__acgExtAssemblies Include="$(AcgExtensionAssemblies)" />
+      <CurrentOpenApiReference>
+        <Command>dotnet %(AcgToolDir)/ApiCodeGenerator.MSBuild.dll "%(FullPath)" "%(Options)" "%(OutputPath)" -v "Namespace=%(Namespace),ClassName=%(ClassName)</Command>
+      </CurrentOpenApiReference>
+      <CurrentOpenApiReference>
+        <Command Condition="'%(CurrentOpenApiReference.Variables)' != ''">%(Command),%(CurrentOpenApiReference.Variables)</Command>
+      </CurrentOpenApiReference>
+      <CurrentOpenApiReference>
+        <Command>%(Command)"</Command>
+      </CurrentOpenApiReference>
+      <CurrentOpenApiReference>
+        <Command Condition="'@(__acgExtAssemblies)' != ''">%(CurrentOpenApiReference.Command)@(__acgExtAssemblies-&gt;' -e "%(Identity)"', ' ')</Command>
+      </CurrentOpenApiReference>
+      <CurrentOpenApiReference>
+        <Command Condition="'$(__AcgNswagToolDir)' != ''">%(Command) --nswagTool "$(__AcgNswagToolDir)"</Command>
+      </CurrentOpenApiReference>
+      <CurrentOpenApiReference>
+        <Command Condition="'$(AcgNswagBase)' != ''">%(Command) -b "$(AcgNswagBase)"</Command>
+      </CurrentOpenApiReference>
+    </ItemGroup>
+    <Warning Condition="'@(__acgNotExistsBiExtAssemblies)' != ''" Text="File '%(__acgNotExistsBiExtAssemblies.Identity)' not found." />
+    <Exec Command="%(CurrentOpenApiReference.Command)"
+      LogStandardErrorAsError="true"
+      CustomWarningRegularExpression="^WARNING .*" />
+  </Target>
+</Project>

@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "format": "int32",
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,30 @@
+{%- if HasDescription -%}
+/// <summary>
+/// {{ Description | csharpdocs }}
+/// </summary>
+{%- endif -%}
+[System.CodeDom.Compiler.GeneratedCode("ApiCodeGenerator.AsyncApi", "{{ ToolchainVersion }}")]
+{{ ClientClassAccessModifier  }} {% if IsAbstract %}abstract {% endif %}partial class {{Class}}{% if HasBaseTypes %} : {{BaseTypes}}{% endif %}
+{
+    {% template Client.Class.Body | tab %}
+{%- for operation in OperationModels -%}
+  {%- if operation.HasDescription -%}
+    /// <summary>
+    /// {{ operation.Description | csharpdocs }}
+    /// </summary>
+  {%- endif -%}
+  {%- capture parametersText %} {%- template Client.Operation.Parameters -%} {% endcapture -%}
+  {%- if operation.HasPublish -%}
+    public Task {{operation.OperationName}}({{parametersText}}, {{operation.PayloadType}} payload)
+    {
+        {% template Client.Opertaion.Publish.Body | tab %}
+    }
+  {%-  else -%}
+    public void {{operation.OperationName}}({{parametersText}}, Action<{{operation.PayloadType}}> callback)
+    {
+        {% template Client.Opertaion.Subscribe.Body | tab %}
+    }
+  {%- endif -%}
+
+{% endfor -%}
+}

@@ -1,0 +1,44 @@
+{%- comment %}
+@Model CSharpRabbitOperationModel operation
+{% endcomment -%}
+
+var queue = "{{operation.QueueName}}"; // queue from specification
+var channel = _channelPool.GetChannel("{{operation.OperationId}}");
+var exchange = "{{operation.ExchangeName}}";
+var routingKey = "{{operation.ChannelName}}";
+
+// TODO: declare passive?
+channel.QueueDeclare(queue);
+
+// IMPORTANT! If the routing key contains {some-parameter-name}
+// you must change the routing key below to something meaningful for amqp service listening for messages.
+// For demo purposes you can just replace it with the wildcard '#' which means it recieves
+// all messages no matter what the parameter is.
+channel.QueueBind(queue: queue,
+            exchange: exchange,
+            routingKey: routingKey);
+
+var consumer = new EventingBasicConsumer(channel);
+consumer.Received += (_, ea) =>
+{
+    var body = ea.Body.ToArray();
+{%- if HasNewtonsoftJsonLibrary -%}
+    var message = JsonConvert.DeserializeObject<{{operation.PayloadType}}>(Encoding.UTF8.GetString(body));
+    {%-  else -%}
+    var message = JsonSerializer.Deserialize<{{operation.PayloadType}}>(Encoding.UTF8.GetString(body));
+{%- endif %}
+    try
+    {
+        callback.Invoke(message);
+
+        channel.BasicAck(ea.DeliveryTag, true);
+    }
+    catch (Exception e)
+    {
+        channel.BasicReject(ea.DeliveryTag, false);
+    }
+};
+
+channel.BasicConsume(queue: queue,
+    autoAck: false,
+    consumer: consumer);

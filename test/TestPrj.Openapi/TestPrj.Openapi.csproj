@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../src/ApiCodeGenerator.MSBuild/build/ApiCodeGenerator.MSBuild.props" />
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <__AcgTasksLib>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../src/ApiCodeGenerator.MSBuild/bin/Debug/netstandard2.0/ApiCodeGenerator.MSBuild.dll'))</__AcgTasksLib>
+    <__AcgToolsDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../src/ApiCodeGenerator.MSBuild/bin/Debug/'))</__AcgToolsDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AcgBuiltInExtensionAssemblies Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../src/ApiCodeGenerator.OpenApi/bin/Debug/netstandard2.0/ApiCodeGenerator.OpenApi.dll'))" />
+    <AcgBuiltInExtensionAssemblies Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../src/ApiCodeGenerator.AsyncApi/bin/Debug/netstandard2.0/ApiCodeGenerator.AsyncApi.dll'))" />
+
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="5.0" />
+    <PackageReference Include="NSwag.MSBuild" Version="14.0.2" />
+
+  </ItemGroup>
+
+  <Import Project="../../src/ApiCodeGenerator.MSBuild/build/ApiCodeGenerator.MSBuild.targets" />
+</Project>

@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$author$</authors>
+    <developmentDependency>true</developmentDependency>
+    <description>Adds API client generation to the project based on the NSwag file and the API description document.</description>
+    <repository type="git" url="$repository$" />
+    <dependencies>
+      <dependency id="Microsoft.Extensions.ApiDescription.Client" version="5.0" />
+      <dependency id="NSwag.MSBuild" version="$nswagVersion$" />
+    </dependencies>
+    <license type="file">LICENSE</license>
+    <readme>README.MD</readme>
+    <tags>AsyncAPI OpenAPI Swagger CpdeGen AspNet</tags>
+  </metadata>
+  <files>
+    <file src="bin\$configuration$\**\*.*" target="tools" exclude="bin\$configuration$\**\*.pdb" />
+    <file src="..\ApiCodeGenerator.OpenApi\bin\$configuration$\netstandard2.0\ApiCodeGenerator.OpenApi.dll" target="tools" />
+    <file src="..\ApiCodeGenerator.AsyncApi\bin\$configuration$\netstandard2.0\ApiCodeGenerator.AsyncApi.dll" target="tools" />
+    <file src="build\*" target="build" />
+    <file src="..\..\LICENSE" target="LICENSE" />
+    <file src="..\..\README.MD" target="README.MD" />
+  </files>
+</package>

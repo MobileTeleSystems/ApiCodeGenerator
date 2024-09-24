@@ -1,0 +1,11 @@
+private readonly {{ChannelPoolType}} _channelPool;
+
+public {{Class}}(IConnection connection)
+  : this({{ChannelPoolType}}.Create(connection))
+{
+}
+
+public {{Class}}({{ChannelPoolType}} pool)
+{
+    _channelPool = pool;
+}

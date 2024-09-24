@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
+    <PackageId>$(AssemblyName).Sdk</PackageId>
+    <Nullable>enable</Nullable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <DefineConstants>$(DefineConstants);ASYNC_API</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Templates*\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../ApiCodeGenerator.OpenApi/Converters/SettingsConverter.cs" Link="Converters/SettingsConverter.cs" />
+    <Compile Include="../ApiCodeGenerator.OpenApi/DefaultTemplateFactory.cs" Link="DefaultTemplateFactory.cs" />
+    <Compile Include="../ApiCodeGenerator.OpenApi/Helpers/SettingsHelpers.cs" Link="Helpers/SettingsHelpers.cs" />
+    <Compile Include="../ApiCodeGenerator.OpenApi/PropertyNameGeneratorWithReplace.cs" Link="PropertyNameGeneratorWithReplace.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="$(NJsonSchemaVersion)" />
+    <PackageReference Include="YamlDotNet" Version="11.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../ApiCodeGenerator.Abstraction/ApiCodeGenerator.Abstraction.csproj" />
+  </ItemGroup>
+</Project>

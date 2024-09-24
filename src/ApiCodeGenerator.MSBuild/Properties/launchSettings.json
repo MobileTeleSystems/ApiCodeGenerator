@@ -1,0 +1,9 @@
+﻿{
+  "profiles": {
+    "NswagClient": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "msbuild ../../../../../test/TestPrj.Openapi/TestPrj.Openapi.csproj"
+    }
+  }
+}

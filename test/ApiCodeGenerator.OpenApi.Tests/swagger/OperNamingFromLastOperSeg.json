@@ -1,0 +1,45 @@
+﻿{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "test API"
+  },
+  "host": "localhost",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "test",
+      "description": "RESTful test service"
+    }
+  ],
+  "paths": {
+    "testService/testOper": {
+      "get": {
+        "tags": [ "testOper" ],
+        "summary": "Test operation",
+        "operationId": "Seg1.Seg2.getTestOperUsingGET",
+        "produces": [ "application/json" ],
+        "responses": {
+          "200": {
+            "description": "Запрос успешно принят",
+            "schema": {
+              "$ref": "#/definitions/testOperResponse"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "definitions": {
+    "testOperResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,290 @@
+﻿# EditorConfig is awesome: http://EditorConfig.org
+
+# indent_style             : { tab | space }
+# indent_size              : { integer | tab }
+# tab_width                : { integer (defaults "indent_size" when "indent_size" is a number) }
+# end_of_line              : { lf | cr | crlf }
+# charset                  : { latin1 | utf-8 | utf-16be | utf-16le }
+# trim_trailing_whitespace : { true | false }
+# insert_final_newline     : { true | false }
+# max_line_length          : { integer }
+
+# top-most EditorConfig file
+root = true
+
+[*]
+end_of_line = crlf
+insert_final_newline = true
+indent_style = space
+indent_size = 2
+charset = utf-8-bom
+trim_trailing_whitespace = true
+tab_width = 2
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_prefer_auto_properties = true:warning
+dotnet_style_object_initializer = true:warning
+dotnet_style_collection_initializer = true:warning
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = false:suggestion
+dotnet_style_prefer_conditional_expression_over_return = false:suggestion
+dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+dotnet_style_prefer_compound_assignment = true:warning
+dotnet_style_prefer_simplified_interpolation = true:suggestion
+dotnet_style_namespace_match_folder = true:suggestion
+
+[*.{yaml,yml}]
+charset = utf-8
+
+[*.cs]
+indent_size = 4
+tab_width = 4
+#################################################
+# Настройки серьёзности диагностик
+#################################################
+
+
+# IDE0051: Remove unused private members
+dotnet_diagnostic.IDE0051.severity = warning
+# IDE0052: Remove unread private members
+dotnet_diagnostic.IDE0052.severity = warning
+
+# использование this только если это требуется для однозначности (поля, свойства, методыб события)
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#this-and-me
+dotnet_style_qualification_for_field = false:error
+dotnet_style_qualification_for_property = false:error
+dotnet_style_qualification_for_method = false:error
+dotnet_style_qualification_for_event = false:error
+
+# всегда использовать стандартные типы С# (unt вместо Int32)
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#language-keywords
+dotnet_style_predefined_type_for_locals_parameters_members = true:warning
+dotnet_style_predefined_type_for_member_access = true:warning
+
+# всегда указывать модификатор доступа и readonly для неизменяемых полей
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#normalize-modifiers
+dotnet_style_require_accessibility_modifiers = always:warning
+dotnet_style_readonly_field = true:warning
+
+# Свойства выражений
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#expression-level-preferences
+# Предупреждать если не используется инициализаторы объектов new Class{ Prop = 1 };
+dotnet_style_object_initializer = true:warning
+# Предупреждать если не используется инициализаторы коллекций new List<int>{ 1 };
+dotnet_style_collection_initializer = true:warning
+# Использование именнованных кортежей
+# dotnet_style_explicit_tuple_names = true:warning
+# dotnet_style_prefer_inferred_tuple_names = true:warning
+# Предупреждать если не используются авто-свойства Prop { get; }
+dotnet_style_prefer_auto_properties = true:warning
+# Предупреждать если используется if/else вместо тернарного оператора ?: при присвоении
+dotnet_style_prefer_conditional_expression_over_assignment = false:suggestion
+# То же свамое, но для ретурн
+dotnet_style_prefer_conditional_expression_over_return = false:suggestion
+# предупреждать если можно использовать составное присвоение (+=, -= и т.д.)
+dotnet_style_prefer_compound_assignment = true:warning
+
+# Проверки на null
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#null-checking-preferences
+# Предупреждать если не используется оператор ??
+#dotnet_style_coalesce_expression = true:warning
+# предупреждать если не используется оператор ?.
+#dotnet_style_null_propagation = true:warning
+
+# Ошибка если есть неиспользуемые параметры
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#parameter-preferences
+dotnet_code_quality_unused_parameters = all:error
+
+# При переносе строки оперетор должен размещаться на следующей строке: if(true <перенос> && true)
+# https://github.com/MicrosoftDocs/visualstudio-docs/issues/3641
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+
+# Выведение типов
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#implicit-and-explicit-types
+# Предупреждать если не используется var при инициализации стандартных типов
+csharp_style_var_for_built_in_types = true:warning
+# Предупреждать если не используется var если тип указан в правой части выражения
+csharp_style_var_when_type_is_apparent = true:warning
+# Использовать var в остальных случаях
+#csharp_style_var_elsewhere = true:warning
+
+# Expression-bodied members
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#expression-bodied-members
+# при генерации методов используем упрощенное написание, но не требуем
+csharp_style_expression_bodied_methods = true:none
+# стрелочные конструкторы не используем
+csharp_style_expression_bodied_constructors = false:silent
+# для операторов
+csharp_style_expression_bodied_operators = true:silent
+# для свойств когда только get (int Prop => 1)
+csharp_style_expression_bodied_properties = true:silent
+# для индексаторов
+csharp_style_expression_bodied_indexers = true:silent
+# для акцессоров свойств
+csharp_style_expression_bodied_accessors = when_on_single_line:warning
+# для лямбда-выражений
+csharp_style_expression_bodied_lambdas = true:warning
+# для локальных функций
+csharp_style_expression_bodied_local_functions = when_on_single_line:warning
+
+# Сопоставление с образцом
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#pattern-matching
+# Предупреждать если не исползуется сопоставление типов при последующем приведении к типу (variable is int i)
+csharp_style_pattern_matching_over_is_with_cast_check = true:warning
+# Предупреждать если выражение as может заменено
+csharp_style_pattern_matching_over_as_with_null_check = true:warning
+
+# Встроенное объявление out переменной
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#inlined-variable-declarations
+csharp_style_inlined_variable_declaration = true:warning
+
+# Выведение типа для оператора default
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#expression-level-preferences
+csharp_prefer_simple_default_expression = true:warning
+
+# "Null" checking preferences
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#c-null-checking-preferences
+# Предупреждать если можно упростить проверку на null с выбросом исключения
+csharp_style_throw_expression = true:warning
+# Предупреждать если можно упростить проверку на null вызова делегата
+csharp_style_conditional_delegate_call = true:warning
+
+# Всегда использовать блоки кода
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#code-block-preferences
+csharp_prefer_braces = false:warning
+
+# Не используемые значения
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#unused-value-preferences
+# если выражение возвращает значение которое не используется предлагать добаыить присвоение к подчеркиванию
+csharp_style_unused_value_expression_statement_preference = discard_variable:silent
+# Предупреждать если присваемая переменная не используется и она не является подчеркиванием
+csharp_style_unused_value_assignment_preference = discard_variable:warning
+
+
+# Miscellaneous preferences
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-language-conventions#miscellaneous-preferences
+# Предпочитать локальные функции анонимным
+csharp_style_pattern_local_over_anonymous_function = true:silent
+# Директивы using размещать вне
+csharp_using_directive_placement = outside_namespace:warning
+# Локальные функции помечать как статические
+#csharp_prefer_static_local_function = true:warning
+# Предпочитать использовать простой using
+#csharp_prefer_simple_using_statement = false:warning
+
+##########################################
+# .NET Соглашения по форматированию
+# https://docs.microsoft.com/visualstudio/ide/editorconfig-code-style-settings-reference#formatting-conventions
+##########################################
+
+# При сортировке системные юзинги размещать вначале
+dotnet_sort_system_directives_first = true
+
+# открывающую фигурную скобку всегда размещать на новой строке
+csharp_new_line_before_open_brace = all
+# опереатор else должен размещаться на новой строке
+csharp_new_line_before_else = true
+# опереатор catch должен размещаться на новой строке
+csharp_new_line_before_catch = true
+# опереатор finally должен размещаться на новой строке
+csharp_new_line_before_finally = true
+# при инициализации объекта каждый член должен размещаться на новой строке
+csharp_new_line_before_members_in_object_initializers = true
+#  то же только для анонимных типов
+csharp_new_line_before_members_in_anonymous_types = true
+# операторы выражения LINQ должны располагаться с новой строки
+csharp_new_line_between_query_expression_clauses = true
+
+###############################
+# Naming
+###############################
+
+# styles
+dotnet_naming_style.upper_style.capitalization = all_upper
+
+dotnet_naming_style.camel_prefix_underscore_style.capitalization = camel_case
+dotnet_naming_style.camel_prefix_underscore_style.required_prefix = _
+
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
+# private static readonly
+dotnet_naming_rule.private_static_readonly_fields.symbols = private_static_readonly_fields
+dotnet_naming_rule.private_static_readonly_fields.style = upper_style
+dotnet_naming_rule.private_static_readonly_fields.severity = none
+
+dotnet_naming_symbols.private_static_readonly_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_readonly_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_readonly_fields.required_modifiers = static,readonly
+
+# private const
+dotnet_naming_rule.private_const.symbols = private_const
+dotnet_naming_rule.private_const.style = upper_style
+dotnet_naming_rule.private_const.severity = none
+
+dotnet_naming_symbols.private_const.applicable_kinds = field
+dotnet_naming_symbols.private_const.applicable_accessibilities = private
+dotnet_naming_symbols.private_const.required_modifiers = const
+
+# private fields
+dotnet_naming_rule.private_members_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_members_with_underscore.style = camel_prefix_underscore_style
+dotnet_naming_rule.private_members_with_underscore.severity = warning
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+# local variables
+dotnet_naming_rule.local_variable.symbols = local_variable
+dotnet_naming_rule.local_variable.style = camel_case_style
+dotnet_naming_rule.local_variable.severity = error
+
+dotnet_naming_symbols.local_variable.applicable_kinds = method
+dotnet_naming_symbols.local_variable.applicable_accessibilities = local
+
+# Function parameters
+dotnet_naming_symbols.parameters_group.applicable_kinds = parameter
+dotnet_naming_rule.parameters_rule.symbols = parameters_group
+dotnet_naming_rule.parameters_rule.style = camel_case_style
+dotnet_naming_rule.parameters_rule.severity = error
+
+#  namespace, class, enum, struct, delegate, event, method, property
+dotnet_naming_symbols.element_group.applicable_kinds = namespace, class, enum, struct, delegate, event, method, property
+dotnet_naming_rule.element_rule.symbols = element_group
+dotnet_naming_rule.element_rule.style = pascal_case_style
+dotnet_naming_rule.element_rule.severity = error
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_namespace_declarations = block_scoped:silent
+csharp_style_prefer_method_group_conversion = true:silent
+csharp_style_prefer_top_level_statements = true:silent
+csharp_indent_labels = one_less_than_current
+
+# diagnostics
+dotnet_diagnostic.SA0001.severity = none
+dotnet_diagnostic.SA1005.severity = silent
+dotnet_diagnostic.SA1015.severity = none
+dotnet_diagnostic.SA1024.severity = none
+dotnet_diagnostic.SA1101.severity = silent
+dotnet_diagnostic.SA1116.severity = none
+dotnet_diagnostic.SA1118.severity = silent
+dotnet_diagnostic.SA1200.severity = none
+dotnet_diagnostic.SA1309.severity = none
+dotnet_diagnostic.SA1310.severity = none
+dotnet_diagnostic.SA1311.severity = none
+dotnet_diagnostic.SA1503.severity = none
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1623.severity = none
+dotnet_diagnostic.SA1633.severity = silent
+dotnet_diagnostic.SA1642.severity = none
+
+dotnet_diagnostic.NUnit2001.severity = silent
+dotnet_diagnostic.NUnit2002.severity = silent
+dotnet_diagnostic.NUnit2003.severity = silent
+dotnet_diagnostic.NUnit2004.severity = silent
+dotnet_diagnostic.NUnit2005.severity = silent
+dotnet_diagnostic.NUnit2006.severity = silent

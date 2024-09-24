@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ItemGroup>
+    <OpenApiReference Update="@(OpenApiReference)">
+      <Variables>%(Variables),$(AcgDefaultVariables)</Variables>
+    </OpenApiReference>
+  </ItemGroup>
+
+  <!-- Удаление сгенрированных файлов в при запуске задачи Clenup -->
+  <Target Name="CleanAcgGeneratedCode"
+    AfterTargets="CoreClean"
+    Condition="'$(AcgCleanupEnabled)' == 'true'"
+    DependsOnTargets="_GetMetadataForOpenApiReferences">
+    <Delete Files="@(OpenApiReference-&gt;'%(OutputPath)')" />
+  </Target>
+
+  <!-- При изменении файла настроек удаляем сгенерированый код для запуска генерации -->
+  <Target Name="_GenerateOpenApiCodeConfigChanged"
+    BeforeTargets="_GenerateOpenApiCode"
+    Condition="$(OpenApiGenerateCodeAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true')"
+    Inputs="%(OpenApiReference.Options)"
+    Outputs="%(OpenApiReference.OutputPath)">
+    <Delete Files="%(OpenApiReference.OutputPath)" />
+  </Target>
+  <Import Project="Console.targets" Condition="'$(AcgUseOwnProcess)' == 'true'" />
+  <Import Project="Task.targets" Condition="'$(AcgUseOwnProcess)' != 'true'" />
+</Project>

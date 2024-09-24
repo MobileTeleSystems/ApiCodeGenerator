@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="ApiCodeGenerator.Core" />
+    <InternalsVisibleTo Include="ApiCodeGenerator.MSBuild" />
+    <InternalsVisibleTo Include="ApiCodeGenerator.Core.Tests" />
+    <InternalsVisibleTo Include="ApiCodeGenerator.OpenApi.Tests" />
+    <InternalsVisibleTo Include="ApiCodeGenerator.AsyncApi.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,59 @@
+{%- comment %}
+@Model CSharpRabbitOperationModel operation
+{% endcomment -%}
+
+var exchange = "{{operation.ExchangeName}}";
+var routingKey = "{{operation.ChannelName}}";
+
+var channel = _channelPool.GetChannel("{{operation.OperationId}}");
+var exchangeProps = new Dictionary<string, object>
+{
+{%- if operation.HasCc -%}
+    ["CC"] = new List<object>{
+{%-    for cc in operation.Cc -%}
+        "{{cc}}",
+{%-    endfor -%}
+    },
+{%- endif -%}
+{%- if operation.HasBcc -%}
+    ["BCC"] = new List<object>{
+{%-    for bcc in operation.Bcc -%}
+        "{{bcc}}",
+{%-    endfor -%}
+    },
+{%- endif -%}
+};
+
+channel.ExchangeDeclare(
+    exchange: exchange, // exchange.name from channel binding
+    type: "{{operation.ExchangeType}}", // type from channel binding
+    {{operation.ExchangeDurableStr}}, // durable from channel binding
+    {{operation.ExchangeAutoDeleteStr}}, // autoDelete from channel binding
+    exchangeProps);
+
+var props = channel.CreateBasicProperties();
+
+props.CorrelationId = "{{operation.OperationId}}_{{operation.ChannelName}}";
+{%- if operation.ReplyTo != '' -%}
+props.ReplyTo = "{{operation.ReplyTo}}";
+{% endif -%}
+props.DeliveryMode = {{operation.DeliveryMode}};
+props.Priority = {{operation.Priority}};
+{%- if operation.ReplyTo != '' -%}
+props.Timestamp = new AmqpTimestamp(DateTimeOffset.UnixEpoch.Ticks);
+{% endif -%}
+props.Expiration = "{{operation.Expiration}}";
+
+{%- if HasNewtonsoftJsonLibrary %}
+    var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload));
+{%- else %}
+var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload));
+{%- endif %}
+
+channel.BasicPublish(exchange: exchange,
+    routingKey: routingKey,
+    mandatory: {{operation.Mandatory}},
+    basicProperties: props,
+    body: body);
+
+return Task.CompletedTask;

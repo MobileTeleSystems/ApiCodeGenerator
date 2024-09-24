@@ -1,0 +1,108 @@
+/// <summary>
+/// A channel pool for all channels defined in the async api specification
+/// </summary>
+[System.CodeDom.Compiler.GeneratedCode("ApiCodeGenerator.AsyncApi", "{{ ToolchainVersion }}")]
+public class {{ChannelPoolType}} //: IChannelPool
+{
+    private class Channel : IDisposable
+    {
+        /// <summary>
+        /// The confirm mode for the channel
+        /// </summary>
+        public bool Confirm { get; init; }
+
+        /// <summary>
+        /// The prefetch count for the channel
+        /// </summary>
+        public ushort PrefetchCount { get; init; }
+
+        /// <summary>
+        /// The underlying amqp model/channel
+        /// </summary>
+        public IModel Model { get; init; }
+
+        public void Dispose()
+        {
+            Model?.Close();
+            Model?.Dispose();
+        }
+    }
+
+    private readonly IConnection _connection;
+    private readonly IDictionary<string, Channel> _channels = new Dictionary<string, Channel>();
+
+    private {{ChannelPoolType}}(IConnection connection)
+    {
+        _connection = connection;
+
+    {%- for operation in OperationModels -%}
+      {%- if operation.HasPublish -%}
+        _channels.Add("{{operation.OperationId}}", CreateChannel(connection));
+      {%-  else -%}
+        _channels.Add(
+            "{{operation.OperationId}}",
+            CreateChannel(
+                connection,
+                {{operation.PrefetchCount}},
+                {{operation.Confirm}}));
+      {%- endif -%}
+    {%- endfor -%}
+    }
+
+    public static {{ChannelPoolType}} Create(IConnection connection)
+    {
+        return new {{ChannelPoolType}}(connection);
+    }
+
+    public IModel GetChannel(string operationId)
+    {
+        // check for channel
+        if (!_channels.TryGetValue(operationId, out var channel))
+        {
+            throw new KeyNotFoundException($"No channel found for {operationId}");
+        }
+
+        if (!channel.Model.IsClosed)
+        {
+            return channel.Model;
+        }
+
+        // recreate channel if it is closed
+        _channels[operationId] = CreateChannel(
+            _connection,
+            channel.PrefetchCount, // prefetch from x-prefetch-count on channel binding
+            channel.Confirm); // confirm from confirm on operation binding
+
+        return _channels[operationId].Model;
+    }
+
+    private Channel CreateChannel(
+        IConnection connection,
+        ushort prefetchCount = 100,
+        bool confirm = false)
+    {
+        var model = connection.CreateModel();
+
+        if (confirm)
+        {
+            model.ConfirmSelect();
+        }
+
+        model.BasicQos(0, prefetchCount, false);
+
+        return new Channel
+        {
+            PrefetchCount = prefetchCount,
+            Confirm = confirm,
+            Model = model
+        };
+    }
+
+    public void Dispose()
+    {
+        foreach (var (_, channel) in _channels)
+        {
+            channel?.Dispose();
+        }
+    }
+}

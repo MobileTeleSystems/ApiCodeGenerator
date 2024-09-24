@@ -1,0 +1,11 @@
+{%- assign parametersText = new_array -%}
+{%- for parameter in operation.Parameters -%}
+  {%- capture p -%}{{parameter.ParameterType}} {{parameter.CamelCaseParameterName}}{% endcapture -%}
+  {%- assign arr = p | split: "ёё" -%}
+  {%- if parametersText -%}
+    {%- assign parametersText = parametersText | concat: arr -%}
+  {%- else -%}
+    {%- assign parametersText = arr -%}
+  {%- endif -%}
+{%- endfor -%}
+{{ parametersText | join: ", " -}}

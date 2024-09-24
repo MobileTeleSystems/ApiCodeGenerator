@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <!-- Включает автоматическую генерацию элементов OpenApiReference по обнаруженным файлам *.nswag -->
+    <AcgGenerateOpenapiReference Condition="'$(AcgGenerateOpenapiReference)' == ''">true</AcgGenerateOpenapiReference>
+    <!-- Удаление сгенрированного кода при выполнении цели Cleanup -->
+    <AcgCleanupEnabled Condition="'$(AcgCleanupEnabled)' == ''">true</AcgCleanupEnabled>
+    <!-- имя файла с базовыми настройками -->
+    <AcgNswagBaseFileName Condition="'$(AcgNswagBaseFileName)' == ''">base.nswag</AcgNswagBaseFileName>
+    <!-- Путь к каталогу в котором будет вестись поиск документов -->
+    <AcgApiDocumentDir Condition="'$(AcgApiDocumentDir)' == ''" />
+    <!-- Включает генерацию ссылок на документ, для отображения его рядом с файлом nswag -->
+    <AcgApiDocumentLinkNearNswag Condition="'$(AcgApiDocumentLinkNearNswag)' == ''">false</AcgApiDocumentLinkNearNswag>
+    <!-- Переменные по умолчанию передаваемые во все nswag. Пары ключ=значение через запятую -->
+    <AcgDefaultVariables />
+    <AcgUseOwnProcess Condition="'$(AcgUseOwnProcess)' == ''">false</AcgUseOwnProcess>
+    <__AcgTasksLib>$(MSBuildThisFileDirectory)../tools/netstandard2.0/ApiCodeGenerator.MSBuild.dll</__AcgTasksLib>
+
+    <!-- *** служебные свойства *** -->
+    <__AcgToolsDir>$(MSBuildThisFileDirectory)../tools/</__AcgToolsDir>
+    <AcgExtensionAssemblies />
+  </PropertyGroup>
+
+  <ItemGroup Label="Automatic generated OpenApiReferences" Condition="'$(AcgGenerateOpenapiReference)' == 'true'">
+    <_Temporary Remove="@(_Temporary)" />
+    <_Temporary1 Remove="@(_Temporary1)" />
+    <_OpenApiReference Remove="@(_OpenApiReference)" />
+
+    <_Temporary Include="**/*.nswag" Exclude="%(OpenApiReference.Options)">
+      <DocumentDir>$(ProjectDir)%(RecursiveDir)</DocumentDir>
+    </_Temporary>
+    <_Temporary Update="@(_Temporary)" Condition="'$(AcgApiDocumentDir)' == 'true'">
+      <DocumentDir>$([MSBuild]::EnsureTrailingSlash('$(AcgApiDocumentDir)'))</DocumentDir>
+    </_Temporary>
+
+    <_Temporary1 Include="@(_Temporary)">
+      <OpenApiPath>%(DocumentDir)%(FileName).json</OpenApiPath>
+      <Options>%(Identity)</Options>
+    </_Temporary1>
+    <_Temporary1 Include="@(_Temporary)">
+      <OpenApiPath>%(DocumentDir)%(FileName).yml</OpenApiPath>
+      <Options>%(FullPath)</Options>
+    </_Temporary1>
+    <_Temporary1 Include="@(_Temporary)">
+      <OpenApiPath>%(DocumentDir)%(FileName).yaml</OpenApiPath>
+      <Options>%(FullPath)</Options>
+    </_Temporary1>
+
+    <_OpenApiReference Include="@(_Temporary1 -&gt; '%(OpenApiPath)')"
+      CodeGenerator="Acg"
+      Options="%(Options)" />
+    <OpenApiReference Include="@(_OpenApiReference-&gt;Exists())" />
+
+    <!-- Добавление ссылки на документ -->
+    <OpenApiReference Update="@(OpenApiReference)" Condition="'$(AcgApiDocumentLinkNearNswag)' == 'true' AND '$(AcgApiDocumentDir)' != ''">
+      <Link>$([System.IO.Path]::ChangeExtension(%(Options),$([System.IO.Path]::GetExtension('%(Identity)'))))</Link>
+    </OpenApiReference>
+
+    <!-- Поддержка обновления в IDE -->
+    <UpToDateCheckInput Include="@(OpenApiReference);@(OpenApiReference -&gt; '%(Options)')" />
+    <CustomAdditionalCompileInputs
+      Include="@(OpenApiReference);@(OpenApiReference -&gt; '%(Options)')" />
+
+    <!-- clenup -->
+    <_Temporary Remove="@(_Temporary)" />
+    <_Temporary1 Remove="@(_Temporary1)" />
+    <_OpenApiReference Remove="@(_OpenApiReference)" />
+  </ItemGroup>
+</Project>

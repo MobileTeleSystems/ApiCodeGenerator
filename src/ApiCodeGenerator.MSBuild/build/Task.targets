@@ -1,0 +1,20 @@
+<Project>
+  <ItemGroup Condition="'@(AcgBuiltInExtensionAssemblies)' == ''">
+    <AcgBuiltInExtensionAssemblies Include="$(__AcgToolsDir)\ApiCodeGenerator.OpenApi.dll" Condition="Exists('$(__AcgToolsDir)\ApiCodeGenerator.OpenApi.dll')" />
+    <AcgBuiltInExtensionAssemblies Include="$(__AcgToolsDir)\ApiCodeGenerator.AsyncApi.dll" Condition="Exists('$(__AcgToolsDir)\ApiCodeGenerator.AsyncApi.dll')" />
+  </ItemGroup>
+
+  <UsingTask AssemblyFile="$(__AcgTasksLib)" TaskName="ApiCodeGenerationTask" TaskFactory="AcgCodeGenerationTaskFactory">
+    <Task>
+      <Extensions>@(AcgBuiltInExtensionAssemblies);$(AcgExtensionAssemblies)</Extensions>
+      <NswagToolsPath>$(PkgNSwag_MSBuild)</NswagToolsPath>
+    </Task>
+  </UsingTask>
+
+  <Target Name="GenerateAcg">
+    <ApiCodeGenerationTask Variables="Namespace=%(CurrentOpenApiReference.Namespace),ClassName=%(CurrentOpenApiReference.ClassName),%(CurrentOpenApiReference.Variables)"
+      OpenApiFile="%(CurrentOpenApiReference.Identity)"
+      NswagFile="%(CurrentOpenApiReference.Options)"
+      OutFile="%(CurrentOpenApiReference.OutputPath)" />
+  </Target>
+</Project>

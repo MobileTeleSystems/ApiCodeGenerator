@@ -1,0 +1,8 @@
+{%- for key in DisabledWarnings -%}
+  {%- assign p_oper = "restore" -%}
+  {%- if restoreWarnings != true -%}
+    {%- assign p_oper = "disable" -%}
+    {%- capture p_descr %} // {{ key[1] -}} {%- endcapture -%}
+  {%- endif -%}
+#pragma warning {{ p_oper }} {{ key[0] }}{{ p_descr }}
+{%- endfor %}
