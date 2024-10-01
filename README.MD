@@ -49,7 +49,7 @@ Available generators:
 * `openApiToCSharpClient` - generates a C# client for accessing the API.
 <!-- * `openApiToTypeScriptClient` - generates a TypeScript client for accessing the API. -->
 * `openApiToCSharpController` - generates a controller and service interface for implementing the controller's logic.
-* `openApiToRefitClient` - generates an interface for accessing the API using the [Refit](https://github.com/reactiveui/refit) library. Requires the `ApiCodeGenerator.OpenApi.Refit` package.
+* `openApiToRefitClient` - generates an interface for accessing the API using the [Refit](https://github.com/reactiveui/refit) library. Requires the [ApiCodeGenerator.OpenApi.Refit](https://github.com/MobileTeleSystems/ApiCodeGenerator.OpenApi.Refit) package.
 
 <!-- > ⚠ If you use the `openApiToTypeScriptClient` generator, you need to replace the generator in the project for the corresponding OpenApiReference.
 > ```xml
@@ -62,7 +62,7 @@ Read about generator options:
  - [for all listed generators](https://github.com/RicoSuter/NSwag/wiki/NSwag-Configuration-Document).
  - [for C# code generators](https://github.com/RicoSuter/NSwag/wiki/CSharpGeneratorBaseSettings)
  - [for `openApiToCSharpClient`](https://github.com/RicoSuter/NSwag/wiki/CSharpClientGeneratorSettings)
- - [for `openApiToTypescriptClient`](https://github.com/RicoSuter/NSwag/wiki/TypeScriptClientGeneratorSettings)
+ <!-- - [for `openApiToTypescriptClient`](https://github.com/RicoSuter/NSwag/wiki/TypeScriptClientGeneratorSettings) -->
 
 Additionally, for all generators, the library adds the `replaceNameCollection` setting for replacing characters in property names.
 ```json
