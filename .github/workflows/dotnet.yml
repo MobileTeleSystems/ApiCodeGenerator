@@ -31,8 +31,9 @@ jobs:
         versionSpec: '6.x'
         
     - name: Determine Version
-      id: version_step # step id used as reference for output values
-      uses: gittools/actions/gitversion/execute@v3.0.0
+      run: |
+        ${GITVERSION_PATH}/dotnet-gitversion /output buildserver || echo "Exit code: $?"
+        cat gitversion.properties
         
     - name: Restore dependencies
       run: dotnet restore
