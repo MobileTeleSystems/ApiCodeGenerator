@@ -25,7 +25,7 @@ jobs:
     - name: Setup GitVersion
       run: |
         export PATH="$PATH:/root/.dotnet/tools"
-        dotnet tool install -g GitVersion.Tool --version 5.* --ignore-failed-sources
+        dotnet tool install -g GitVersion.Tool --version 5.10.3 --ignore-failed-sources
         
     - name: Determine version
       run: |
