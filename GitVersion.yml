@@ -3,7 +3,7 @@ branches:
     main:
         label: ''
         increment: Patch
-        is-mainline: true
+        is-main-branch: true
     develop:
         label: rc
 ignore:
