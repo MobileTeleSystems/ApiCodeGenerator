@@ -39,11 +39,12 @@ jobs:
       
     - name: Build
       run: |
-        dotnet build --nologo --no-restore -p:AssemblyVersion=${GitVersion_AssemblySemVer} \
-          -p:FileVersion=${GitVersion_MajorMinorPatch}  -p:PackageVersion=${GitVersion_SemVer} \
+        dotnet build --nologo --no-restore -p:AssemblyVersion=${GitVersion_AssemblySemVer} \ 
+          -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
+        dotnet pack --nologo --no-build -o ${PackageOutputDir}  -p:PackageVersion=${GitVersion_SemVer} \
           -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} \
           -p:Configuration=Release
-        ls ${{ env.PackageOutputDir }}
+        ls ${PackageOutputDir}
       
     - name: Archive packages
       uses: actions/upload-artifact@v4
