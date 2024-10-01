@@ -32,8 +32,7 @@ jobs:
         
     - name: Determine Version
       run: |
-        ${GITVERSION_PATH}/dotnet-gitversion /output buildserver || echo "Exit code: $?"
-        cat gitversion.properties
+        ${GITVERSION_PATH}/dotnet-gitversion /output buildserver /output json
         
     - name: Restore dependencies
       run: dotnet restore
