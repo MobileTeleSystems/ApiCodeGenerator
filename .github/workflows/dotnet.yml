@@ -39,18 +39,7 @@ jobs:
       
     - name: Build
       run: |
-        dotnet build --nologo --no-restore -p:AssemblyVersion=${GitVersion_AssemblySemVer} \ 
-          -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
-        dotnet pack --nologo --no-build -o ${PackageOutputDir}  -p:PackageVersion=${GitVersion_SemVer} \
-          -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} \
-          -p:Configuration=Release
-        ls ${PackageOutputDir}
-      
-    - name: Archive packages
-      uses: actions/upload-artifact@v4
-      with:
-        name: packages
-        path: ${PackageOutputDir}
+        dotnet build --nologo --no-restore -p:AssemblyVersion=${GitVersion_AssemblySemVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
         
     - name: Test
       run: |
@@ -66,3 +55,13 @@ jobs:
       with:
           name: code-coverage-report
           path: ${TESTRESULTS_DIRECTORY}/CoverageReports/Summary.txt
+    - name: Pack
+      run: |
+        dotnet pack --nologo --no-build -o ${PackageOutputDir}  -p:PackageVersion=${GitVersion_SemVer} -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
+        ls ${PackageOutputDir}
+      
+    - name: Archive packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages
+        path: ${PackageOutputDir}
