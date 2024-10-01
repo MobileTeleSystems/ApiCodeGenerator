@@ -18,7 +18,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-          ref: ${{ github.head_ref }}   # checkout the correct branch name
           fetch-depth: 0 
           
     - name: Setup .NET
@@ -26,23 +25,22 @@ jobs:
       with:
         dotnet-version: 8.0.x
         
-    - name: Setup GitVersion
-      run: |
-        export PATH="$PATH:/root/.dotnet/tools"
-        dotnet tool install -g GitVersion.Tool --version 5.* --ignore-failed-sources
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.0.0
+      with:
+        versionSpec: '6.x'
         
-    - name: Determine version
-      run: |
-        dotnet gitversion /output buildserver
-        export $(grep -E 'GitVersion_(?>AssemblySemFileVer|SemVer|Major|Minor|Patch|MajorMinorPatch)=.*' ./gitversion.properties | xargs )
+    - name: Determine Version
+      id: version_step # step id used as reference for output values
+      uses: gittools/actions/gitversion/execute@v3.0.0
         
     - name: Restore dependencies
       run: dotnet restore
       
     - name: Build
       run: |
-        dotnet build --nologo --no-restore -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
-        dotnet pack --nologo --no-build -o ${NUPKG_DIRECTORY} -p:PackageVersion=${GitVersion_SemVer} -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
+        dotnet build --nologo --no-restore -p:AssemblyVersion=${{ env.assemblySemVer }} -p:FileVersion=${{ env.majorMinorPatch }} -p:Configuration=Release
+        dotnet pack --nologo --no-build -o ${NUPKG_DIRECTORY} -p:PackageVersion=${{ env.semVer }} -p:AssemblyVersion=${{ env.assemblySemFileVer }} -p:FileVersion=${{ env.majorMinorPatch }} -p:Configuration=Release
         
     - name: Test
       run: |
