@@ -13,7 +13,7 @@
     </dependencies>
     <license type="file">LICENSE</license>
     <readme>README.MD</readme>
-    <tags>AsyncAPI OpenAPI Swagger CpdeGen AspNet</tags>
+    <tags>AsyncAPI OpenAPI Swagger CodeGen AspNet</tags>
   </metadata>
   <files>
     <file src="bin\$configuration$\**\*.*" target="tools" exclude="bin\$configuration$\**\*.pdb" />
