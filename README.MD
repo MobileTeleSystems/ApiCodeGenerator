@@ -1,4 +1,10 @@
 [Read in Russian](README_RU.MD)
+
+[![NuGet Version](https://img.shields.io/nuget/vpre/ApiCodeGenerator.MSBuild?style=flat-square)](https://www.nuget.org/packages/ApiCodeGenerator.MSBuild)
+[![GitHub License](https://img.shields.io/github/license/MobileTeleSystems/ApiCodeGenerator?style=flat-square)](https://github.com/MobileTeleSystems/ApiCodeGenerator/blob/dev/LICENSE)
+![Code Coverage](https://img.shields.io/badge/84.90%25-z?style=flat-square&label=coverage) <!-- 
+Before setting up the workflow, the coverage percentage is taken from the IDE  -->
+
 # How to install
 
 1. Add the `ApiCodeGenerator.MSBuild` package in your project.
@@ -43,7 +49,7 @@ Available generators:
 * `openApiToCSharpClient` - generates a C# client for accessing the API.
 <!-- * `openApiToTypeScriptClient` - generates a TypeScript client for accessing the API. -->
 * `openApiToCSharpController` - generates a controller and service interface for implementing the controller's logic.
-* `openApiToRefitClient` - generates an interface for accessing the API using the [Refit](https://github.com/reactiveui/refit) library. Requires the `ApiCodeGenerator.OpenApi.Refit` package.
+* `openApiToRefitClient` - generates an interface for accessing the API using the [Refit](https://github.com/reactiveui/refit) library. Requires the [ApiCodeGenerator.OpenApi.Refit](https://github.com/MobileTeleSystems/ApiCodeGenerator.OpenApi.Refit) package.
 
 <!-- > ⚠ If you use the `openApiToTypeScriptClient` generator, you need to replace the generator in the project for the corresponding OpenApiReference.
 > ```xml
@@ -56,7 +62,7 @@ Read about generator options:
  - [for all listed generators](https://github.com/RicoSuter/NSwag/wiki/NSwag-Configuration-Document).
  - [for C# code generators](https://github.com/RicoSuter/NSwag/wiki/CSharpGeneratorBaseSettings)
  - [for `openApiToCSharpClient`](https://github.com/RicoSuter/NSwag/wiki/CSharpClientGeneratorSettings)
- - [for `openApiToTypescriptClient`](https://github.com/RicoSuter/NSwag/wiki/TypeScriptClientGeneratorSettings)
+ <!-- - [for `openApiToTypescriptClient`](https://github.com/RicoSuter/NSwag/wiki/TypeScriptClientGeneratorSettings) -->
 
 Additionally, for all generators, the library adds the `replaceNameCollection` setting for replacing characters in property names.
 ```json
