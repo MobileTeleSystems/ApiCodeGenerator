@@ -17,6 +17,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+          ref: ${{ github.head_ref }}   # checkout the correct branch name
+          fetch-depth: 0 
+          
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -25,7 +29,7 @@ jobs:
     - name: Setup GitVersion
       run: |
         export PATH="$PATH:/root/.dotnet/tools"
-        dotnet tool install -g GitVersion.Tool --version 5.10.3 --ignore-failed-sources
+        dotnet tool install -g GitVersion.Tool --version 5.* --ignore-failed-sources
         
     - name: Determine version
       run: |
