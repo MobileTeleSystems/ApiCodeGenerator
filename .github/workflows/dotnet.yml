@@ -13,7 +13,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      NUPKG_DIRECTORY: ".packages"
+      PackageOutputDir: ".packages"
 
     steps:
     - uses: actions/checkout@v4
@@ -39,8 +39,17 @@ jobs:
       
     - name: Build
       run: |
-        dotnet build --nologo --no-restore -p:AssemblyVersion=${{ env.assemblySemVer }} -p:FileVersion=${{ env.majorMinorPatch }} -p:Configuration=Release
-        dotnet pack --nologo --no-build -o ${NUPKG_DIRECTORY} -p:PackageVersion=${{ env.semVer }} -p:AssemblyVersion=${{ env.assemblySemFileVer }} -p:FileVersion=${{ env.majorMinorPatch }} -p:Configuration=Release
+        dotnet build --nologo --no-restore -p:AssemblyVersion=${GitVersion_AssemblySemVer} \
+          -p:FileVersion=${GitVersion_MajorMinorPatch}  -p:PackageVersion=${GitVersion_SemVer} \
+          -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} \
+          -p:Configuration=Release
+        ls ${{ env.PackageOutputDir }}
+      
+    - name: Archive packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages
+        path: ${PackageOutputDir}
         
     - name: Test
       run: |
@@ -50,12 +59,6 @@ jobs:
         reportgenerator -reports:${TESTRESULTS_DIRECTORY}/**/coverage.cobertura.xml -reporttypes:TextSummary -targetdir:${TESTRESULTS_DIRECTORY}/CoverageReports
         printf 'TEST_TOTAL_COVERAGE: ' &&  grep 'Line coverage:' ${TESTRESULTS_DIRECTORY}/CoverageReports/Summary.txt | awk -F': ' '{print $2}'
         if [ -e errors ] ; then cat errors ; exit 1 ; fi
-      
-    - name: Archive packages
-      uses: actions/upload-artifact@v4
-      with:
-        name: packages
-        path: ${NUPKG_DIRECTORY}
         
     - name: Archive coverage report
       uses: actions/upload-artifact@v4
