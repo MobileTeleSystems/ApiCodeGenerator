@@ -1,6 +1,10 @@
 [Read in Russian](README_RU.MD)
 
-![NuGet Version](https://img.shields.io/nuget/vpre/ApiCodeGenerator.MSBuild)
+[![NuGet Version](https://img.shields.io/nuget/vpre/ApiCodeGenerator.MSBuild)](https://www.nuget.org/packages/ApiCodeGenerator.MSBuild)
+[![GitHub License](https://img.shields.io/github/license/MobileTeleSystems/ApiCodeGenerator)](https://github.com/MobileTeleSystems/ApiCodeGenerator/blob/dev/LICENSE)
+![Code Coverage](https://img.shields.io/badge/84.90%25-z?label=coverage) <!-- 
+Before setting up the workflow, the coverage percentage is taken from the IDE  -->
+
 # How to install
 
 1. Add the `ApiCodeGenerator.MSBuild` package in your project.
