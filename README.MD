@@ -1,4 +1,6 @@
 [Read in Russian](README_RU.MD)
+
+![NuGet Version](https://img.shields.io/nuget/vpre/ApiCodeGenerator.MSBuild)
 # How to install
 
 1. Add the `ApiCodeGenerator.MSBuild` package in your project.
