@@ -1,0 +1,62 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "dev", "main" ]
+  pull_request:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      NUPKG_DIRECTORY: ".packages"
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Setup GitVersion
+      run: |
+        export PATH="$PATH:/root/.dotnet/tools"
+        dotnet tool install -g GitVersion.Tool --version 5.* --ignore-failed-sources
+        
+    - name: Determine version
+      run: |
+        dotnet gitversion /output buildserver
+        export $(grep -E 'GitVersion_(?>AssemblySemFileVer|SemVer|Major|Minor|Patch|MajorMinorPatch)=.*' ./gitversion.properties | xargs )
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: |
+        dotnet build --nologo --no-restore -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
+        dotnet pack --nologo --no-build -o ${NUPKG_DIRECTORY} -p:PackageVersion=${GitVersion_SemVer} -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
+        
+    - name: Test
+      run: |
+        TESTRESULTS_DIRECTORY='.test_results'
+        dotnet tool install -g dotnet-reportgenerator-globaltool --ignore-failed-sources
+        dotnet test --no-build --verbosity normal --results-directory="${TESTRESULTS_DIRECTORY}" --collect:"XPlat Code Coverage${CI_DOTNET_TEST_COLLECTOR_OPT}" --nologo || (true && echo "ERROR test failure" >> errors)
+        reportgenerator -reports:${TESTRESULTS_DIRECTORY}/**/coverage.cobertura.xml -reporttypes:TextSummary -targetdir:${TESTRESULTS_DIRECTORY}/CoverageReports
+        printf 'TEST_TOTAL_COVERAGE: ' &&  grep 'Line coverage:' ${TESTRESULTS_DIRECTORY}/CoverageReports/Summary.txt | awk -F': ' '{print $2}'
+        if [ -e errors ] ; then cat errors ; exit 1 ; fi
+      
+    - name: Archive packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages
+        path: ${NUPKG_DIRECTORY}
+        
+    - name: Archive coverage report
+      uses: actions/upload-artifact@v4
+      with:
+          name: code-coverage-report
+          path: ${TESTRESULTS_DIRECTORY}/CoverageReports/Summary.txt
