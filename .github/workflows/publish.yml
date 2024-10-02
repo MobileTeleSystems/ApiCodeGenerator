@@ -50,5 +50,8 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         name: v${{ env.GitVersion_SemVer }}
+        tag: v${{ env.GitVersion_SemVer }}
         artifacts: ${{ env.PackageOutputDir }}
         generateReleaseNotes: true
+        commit: ${{ env.GitVersion_Sha}}
+
