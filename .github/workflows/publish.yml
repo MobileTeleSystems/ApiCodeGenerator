@@ -25,6 +25,7 @@ jobs:
     env:
       PackageOutputDir: ".packages"
       Prerelease: ${{ github.event.inputs.prerelease || 'false' }}
+      PushPackage: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event.inputs.push }}
 
     steps:
     - uses: actions/checkout@v4
@@ -56,7 +57,7 @@ jobs:
          -p:Configuration=Release
 
     - name: Nuget Push
-      if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event.inputs.push }}
+      if: env.PushPackage == 'true'
       working-directory: ${{ env.PackageOutputDir }}
       run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
 
