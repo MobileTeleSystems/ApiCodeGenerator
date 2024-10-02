@@ -62,7 +62,7 @@ jobs:
         ls ${PackageOutputDir}
     - run: |
         echo ${PWD}
-        tree
+        tree -a
     - name: Archive packages
       uses: actions/upload-artifact@v4
       with:
