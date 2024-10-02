@@ -55,16 +55,3 @@ jobs:
       with:
           name: code-coverage-report
           path: ${{ env.TESTRESULTS_DIRECTORY }}/CoverageReports/*.*
-    - name: Pack
-      run: |
-        dotnet pack --nologo --no-build -o ${PackageOutputDir}  -p:PackageVersion=${GitVersion_SemVer} -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
-        echo ${PWD}
-        ls ${PackageOutputDir}
-    - run: |
-        echo ${PWD}
-        tree -a
-    - name: Archive packages
-      uses: actions/upload-artifact@v4
-      with:
-        name: packages
-        path: ${{ env.PackageOutputDir }}/*.nupkg

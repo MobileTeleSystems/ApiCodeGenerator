@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_and_test:
+  publish:
 
     runs-on: ubuntu-latest
     env:
@@ -51,7 +51,7 @@ jobs:
       with:
         name: v${{ env.GitVersion_SemVer }}
         tag: v${{ env.GitVersion_SemVer }}
-        artifacts: ${{ env.PackageOutputDir }}
+        artifacts: ${{ env.PackageOutputDir }}/*.nupkg
         generateReleaseNotes: true
         commit: ${{ env.GitVersion_Sha}}
 
