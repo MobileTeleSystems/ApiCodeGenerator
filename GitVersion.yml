@@ -1,11 +1,11 @@
 mode: ContinuousDelivery
 branches:
     main:
-        tag: ''
+        label: ''
         increment: Patch
-        is-mainline: true
+        is-main-branch: true
     develop:
-        tag: rc
+        label: rc
 ignore:
   sha: []
 merge-message-formats: {}
