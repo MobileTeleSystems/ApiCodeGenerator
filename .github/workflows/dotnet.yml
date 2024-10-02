@@ -46,7 +46,7 @@ jobs:
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool --ignore-failed-sources
         dotnet test --no-restore --verbosity normal --results-directory="${TESTRESULTS_DIRECTORY}" --collect:"XPlat Code Coverage${CI_DOTNET_TEST_COLLECTOR_OPT}" --nologo || (true && echo "ERROR test failure" >> errors)
-        reportgenerator -reports:${TESTRESULTS_DIRECTORY}/**/coverage.cobertura.xml -reporttypes:TextSummary -targetdir:${TESTRESULTS_DIRECTORY}/CoverageReports
+        reportgenerator -reports:${TESTRESULTS_DIRECTORY}/**/coverage.cobertura.xml -reporttypes:TextSummary;JsonSummary -targetdir:${TESTRESULTS_DIRECTORY}/CoverageReports
         printf 'TEST_TOTAL_COVERAGE: ' &&  grep 'Line coverage:' ${TESTRESULTS_DIRECTORY}/CoverageReports/Summary.txt | awk -F': ' '{print $2}'
         if [ -e errors ] ; then cat errors ; exit 1 ; fi
         
@@ -54,12 +54,12 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
           name: code-coverage-report
-          path: ${{ env.TESTRESULTS_DIRECTORY }}/CoverageReports/Summary.txt
+          path: ${{ env.TESTRESULTS_DIRECTORY }}/CoverageReports/*.*
     - name: Pack
       run: |
         dotnet pack --nologo --no-build -o ${PackageOutputDir}  -p:PackageVersion=${GitVersion_SemVer} -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
         ls ${PackageOutputDir}
-      
+    - run: tree
     - name: Archive packages
       uses: actions/upload-artifact@v4
       with:
