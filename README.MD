@@ -2,8 +2,7 @@
 
 [![NuGet Version](https://img.shields.io/nuget/vpre/ApiCodeGenerator.MSBuild?style=flat-square)](https://www.nuget.org/packages/ApiCodeGenerator.MSBuild)
 [![GitHub License](https://img.shields.io/github/license/MobileTeleSystems/ApiCodeGenerator?style=flat-square)](https://github.com/MobileTeleSystems/ApiCodeGenerator/blob/dev/LICENSE)
-![Code Coverage](https://img.shields.io/badge/84.90%25-z?style=flat-square&label=coverage) <!-- 
-Before setting up the workflow, the coverage percentage is taken from the IDE  -->
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/bcf93c4065c3442b92e5e95671b8cfcf)](https://app.codacy.com/gh/MobileTeleSystems/ApiCodeGenerator/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
 # How to install
 
