@@ -5,6 +5,18 @@ name: Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      prerelease:
+        default: true
+        type: boolean
+        required: true
+      push:
+        default: false
+        type: boolean
+        description: Push to nuget.org
+
+  push:
+    branches: [ "main" ]
 
 jobs:
   publish:
@@ -12,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PackageOutputDir: ".packages"
+      Prerelease: ${{ github.event.inputs.prerelease || 'false' }}
 
     steps:
     - uses: actions/checkout@v4
@@ -42,9 +55,10 @@ jobs:
          -p:FileVersion=${GitVersion_MajorMinorPatch} \
          -p:Configuration=Release
 
-    # - name: Nuget Push
-    #   working-directory: ${{ env.PackageOutputDir }}
-    #   run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
+    - name: Nuget Push
+      if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event.inputs.push }}
+      working-directory: ${{ env.PackageOutputDir }}
+      run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
 
     - name: Create Release
       uses: ncipollo/release-action@v1
