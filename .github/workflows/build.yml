@@ -53,7 +53,7 @@ jobs:
     - name: Run codacy-coverage-reporter
       uses: codacy/codacy-coverage-reporter-action@v1.3.0
       with:
-        project-token: ${{ secrets.CODACY_API_TOKEN }}
+        project-token: ${{ secrets.CODACY_API_KEY }}
         coverage-reports: ${{ env.TESTRESULTS_DIRECTORY }}/**/*cobertura.xml
         
     - name: Archive test report
