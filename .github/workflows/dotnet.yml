@@ -58,10 +58,10 @@ jobs:
     - name: Pack
       run: |
         dotnet pack --nologo --no-build -o ${PackageOutputDir}  -p:PackageVersion=${GitVersion_SemVer} -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
-        echo $(PWD)
+        echo ${PWD}
         ls ${PackageOutputDir}
     - run: |
-        echo $(PWD)
+        echo ${PWD}
         tree
     - name: Archive packages
       uses: actions/upload-artifact@v4
