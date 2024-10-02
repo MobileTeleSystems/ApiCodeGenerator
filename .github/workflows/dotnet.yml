@@ -9,7 +9,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build_and_test:
 
     runs-on: ubuntu-latest
     env:
@@ -58,8 +58,11 @@ jobs:
     - name: Pack
       run: |
         dotnet pack --nologo --no-build -o ${PackageOutputDir}  -p:PackageVersion=${GitVersion_SemVer} -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} -p:FileVersion=${GitVersion_MajorMinorPatch} -p:Configuration=Release
+        echo $(PWD)
         ls ${PackageOutputDir}
-    - run: tree
+    - run: |
+        echo $(PWD)
+        tree
     - name: Archive packages
       uses: actions/upload-artifact@v4
       with:
