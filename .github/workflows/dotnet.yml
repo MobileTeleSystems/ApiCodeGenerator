@@ -46,7 +46,7 @@ jobs:
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool --ignore-failed-sources
         dotnet test --no-restore --verbosity normal --results-directory="${TESTRESULTS_DIRECTORY}" --collect:"XPlat Code Coverage${CI_DOTNET_TEST_COLLECTOR_OPT}" --nologo || (true && echo "ERROR test failure" >> errors)
-        reportgenerator -reports:${TESTRESULTS_DIRECTORY}/**/coverage.cobertura.xml -reporttypes:TextSummary;JsonSummary -targetdir:${TESTRESULTS_DIRECTORY}/CoverageReports
+        reportgenerator -reports:${TESTRESULTS_DIRECTORY}/**/coverage.cobertura.xml '-reporttypes:TextSummary;JsonSummary' -targetdir:${TESTRESULTS_DIRECTORY}/CoverageReports
         printf 'TEST_TOTAL_COVERAGE: ' &&  grep 'Line coverage:' ${TESTRESULTS_DIRECTORY}/CoverageReports/Summary.txt | awk -F': ' '{print $2}'
         if [ -e errors ] ; then cat errors ; exit 1 ; fi
         
