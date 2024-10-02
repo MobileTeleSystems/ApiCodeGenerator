@@ -68,4 +68,5 @@ jobs:
         artifacts: ${{ env.PackageOutputDir }}/*.nupkg
         generateReleaseNotes: true
         commit: ${{ env.GitVersion_Sha}}
+        prerelease: ${{ env.Prerelease }}
 
