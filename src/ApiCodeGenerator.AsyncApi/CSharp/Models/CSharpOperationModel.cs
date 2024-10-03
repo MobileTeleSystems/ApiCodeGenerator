@@ -52,13 +52,13 @@ public class CSharpOperationModel
 
     public CSharpParameterModel[] Parameters { get; }
 
-    public string PayloadType => _payloadType ??= ResolvePayloadType(Operation.Message.ActualObject.Payload.ActualSchema);
+    public string PayloadType => _payloadType ??= ResolvePayloadType(Operation.Message.ActualObject.Payload.ActualSchema, hint: null);
 
     protected Channel Channel { get; }
 
     protected Operation Operation { get; }
 
-    protected virtual string ResolvePayloadType(JsonSchema jsonSchema, string? hint = null)
+    protected virtual string ResolvePayloadType(JsonSchema jsonSchema, string? hint)
     {
         if (!jsonSchema.HasTypeNameTitle && string.IsNullOrEmpty(hint))
         {

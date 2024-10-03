@@ -90,7 +90,7 @@ namespace ApiCodeGenerator.OpenApi
             return data;
         }
 
-        protected static TSettings ParseSettings(GeneratorContext context, IReadOnlyDictionary<string, string>? variables = null)
+        protected static TSettings ParseSettings(GeneratorContext context, IReadOnlyDictionary<string, string>? variables)
         {
             var unwrapProps = new[]
             {
