@@ -57,6 +57,7 @@ namespace ApiCodeGenerator.AsyncApi.DOM.Serialization
         /// <inheritdoc/>
         public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
+            throw new NotSupportedException();
         }
 
         private static Dictionary<string, Func<T>> GetFactories()
