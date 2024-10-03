@@ -113,14 +113,18 @@ namespace ApiCodeGenerator.Abstraction
         {
             var thisAsm = Assembly.GetCallingAssembly();
             if (assemblyName == thisAsm.GetName())
+            {
                 return null;
+            }
 
             var path = _resolvers.Select(r => r.Invoke(assemblyName)).FirstOrDefault(p => p != null);
 
             var key = assemblyName.Name;
 
             if (path == null && _asmPaths.TryGetValue(key, out var item))
+            {
                 path = item.Path;
+            }
 
             return path == null
                 ? null

@@ -26,7 +26,9 @@ namespace ApiCodeGenerator.Core
         {
             var outDir = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(outDir) && !Directory.Exists(outDir))
+            {
                 Directory.CreateDirectory(outDir);
+            }
 
             using var stream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None);
             using var writer = new StreamWriter(stream);
