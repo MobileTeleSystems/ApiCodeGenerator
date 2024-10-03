@@ -126,7 +126,7 @@ public interface ITemplateProvider
 {
     string? GetFullName(string name, string language);
 
-    string? GetTemplateText(string fullName, string language);
+    string? GetTemplateText(string templateFullName, string language);
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Ordering Rules", "SA1402", Justification = "none")]
@@ -149,9 +149,9 @@ public class EmbededResourceTemplateProvider : ITemplateProvider
             : null;
     }
 
-    public string? GetTemplateText(string resourceName, string language)
+    public string? GetTemplateText(string templateFullName, string language)
     {
-        var resource = _assembly.GetManifestResourceStream(resourceName);
+        var resource = _assembly.GetManifestResourceStream(templateFullName);
         if (resource != null)
         {
             using var reader = new StreamReader(resource);
@@ -185,11 +185,11 @@ public class DirectoryTemplateProvider : ITemplateProvider
         return null;
     }
 
-    public string? GetTemplateText(string templateFilePath, string language)
+    public string? GetTemplateText(string templateFullName, string language)
     {
-        if (File.Exists(templateFilePath))
+        if (File.Exists(templateFullName))
         {
-            return File.ReadAllText(templateFilePath);
+            return File.ReadAllText(templateFullName);
         }
 
         return null;
