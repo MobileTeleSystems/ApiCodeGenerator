@@ -128,14 +128,12 @@ namespace ApiCodeGenerator.OpenApi.Tests
             Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"additionalProperties\":false,\"properties\":{\"processedModel\":{}}}"));
         }
 
-        [TestCase(null)]
-        [TestCase("testSchem.yaml")]
-        public async Task LoadOpenApiDocument_FromYaml(string? documentPath)
+        [Test]
+        public async Task LoadOpenApiDocument_FromYaml()
         {
             var context = CreateContext(new());
             var schemaText = await File.ReadAllTextAsync(TestHelpers.GetSwaggerPath("testSchema.yaml"));
             context.DocumentReader = new StringReader(schemaText);
-            context.DocumentPath = documentPath;
 
             var gen = (CSharpClientContentGenerator)await CSharpClientContentGenerator.CreateAsync(context);
 

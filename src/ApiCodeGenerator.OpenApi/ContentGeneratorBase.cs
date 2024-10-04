@@ -120,19 +120,12 @@ namespace ApiCodeGenerator.OpenApi
             var documentStr = context.DocumentReader!.ReadToEnd();
             documentStr = InvokePreprocessors<string>(documentStr, context.Preprocessors, context.DocumentPath);
 
-            var openApiDocument = IsYaml()
+            var openApiDocument = !(documentStr.StartsWith("{") && documentStr.EndsWith("}"))
                 ? await OpenApiYamlDocument.FromYamlAsync(documentStr)
                 : await OpenApiDocument.FromJsonAsync(documentStr);
 
             openApiDocument = InvokePreprocessors<OpenApiDocument>(openApiDocument, context.Preprocessors, context.DocumentPath);
             return openApiDocument;
-
-            bool IsYaml()
-            {
-                return
-                    (context.DocumentPath is not null && (context.DocumentPath.EndsWith("yml") || context.DocumentPath.EndsWith("yaml")))
-                    || !(documentStr.StartsWith("{") && documentStr.EndsWith("}"));
-            }
         }
 
     }
