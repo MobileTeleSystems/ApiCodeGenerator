@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using ApiCodeGenerator.OpenApi.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
 using NSwag.CodeGeneration.OperationNameGenerators;
+using NUnit.Framework.Internal;
 
 namespace ApiCodeGenerator.OpenApi.Tests
 {
@@ -111,7 +113,10 @@ namespace ApiCodeGenerator.OpenApi.Tests
             context.DocumentReader = new StringReader("{\"definitions\":{\"" + schemaName + "\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\"}}}");
 
             context.Preprocessors = new Preprocessors(
-                new Dictionary<Type, Delegate[]> { [typeof(OpenApiDocument)] = new Delegate[] { dlgt } });
+                new Dictionary<Type, Delegate[]>
+                {
+                    [typeof(OpenApiDocument)] = [dlgt],
+                });
 
             var gen = (CSharpClientContentGenerator)await CSharpClientContentGenerator.CreateAsync(context);
 
@@ -121,6 +126,22 @@ namespace ApiCodeGenerator.OpenApi.Tests
             Assert.That(openApiDocument?.Definitions, Does.ContainKey(schemaName));
             var sch = openApiDocument?.Definitions[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
             Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"additionalProperties\":false,\"properties\":{\"processedModel\":{}}}"));
+        }
+
+        [TestCase(null)]
+        [TestCase("testSchem.yaml")]
+        public async Task LoadOpenApiDocument_FromYaml(string? documentPath)
+        {
+            var context = CreateContext(new());
+            var schemaText = await File.ReadAllTextAsync(TestHelpers.GetSwaggerPath("testSchema.yaml"));
+            context.DocumentReader = new StringReader(schemaText);
+            context.DocumentPath = documentPath;
+
+            var gen = (CSharpClientContentGenerator)await CSharpClientContentGenerator.CreateAsync(context);
+
+            var openApiDocument = GetDocument(gen.Generator);
+
+            Assert.NotNull(openApiDocument);
         }
 
         private GeneratorContext CreateContext(JObject settingsJson, Core.ExtensionManager.Extensions? extension = null)
