@@ -12,7 +12,7 @@
 4. Rebuild the project.
 
 # NSwag File Format
-<!-- > To use hints while editing the file, you can connect the `nswag-shema.json` file from this repository to your editor. -->
+> To use hints while editing the file, set schema https://raw.githubusercontent.com/MobileTeleSystems/ApiCodeGenerator/refs/heads/dev/schemas/nswag.json .
 
 The NSwag format consists of files that store settings for the [NSwagStudio](https://github.com/RicoSuter/NSwag/wiki/NSwagStudio) application, which can be used to configure standard NSwag generators.
 The file has the following structure:
