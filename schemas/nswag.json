@@ -1,0 +1,942 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "runtime": {
+      "type": "string",
+      "enum": [
+        "Default",
+        "WinX64",
+        "WinX86",
+        "NetCore10",
+        "NetCore11",
+        "NetCore20",
+        "NetCore21",
+        "NetCore22",
+        "NetCore30",
+        "Debug"
+      ]
+    },
+    "defaultVariables": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "documentGenerator": {
+      "type": "object",
+      "properties": {
+        "fromDocument": {
+          "type": "object",
+          "properties": {
+            "json": {
+              "type": "string",
+              "description": "Путь к файлу или текст json. Можно указать переменную $(InputJson)"
+            },
+            "url": {
+              "type": "string",
+              "description": "Адрес документа. Не используется если заполнено свойство json"
+            },
+            "output": {
+              "type": "null"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "json"
+              ]
+            },
+            {
+              "required": [
+                "url"
+              ]
+            }
+          ]
+        },
+        "jsonSchemaToOpenApi": {
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Имя схемы"
+            },
+            "schema": {
+              "type": "string",
+              "description": "JSON-схема в виде строки или путь к файлу"
+            }
+          },
+          "required": [
+            "name",
+            "schema"
+          ]
+        },
+        "preprocessors": {
+          "additionalProperties": {
+            "type": "object"
+          },
+          "description": "Список используемых препроцессоров"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "fromDocument"
+          ]
+        },
+        {
+          "required": [
+            "jsonSchemaToOpenApi"
+          ]
+        },
+        {
+          "required": [
+            "preprocessors"
+          ]
+        }
+      ]
+    },
+    "codeGenerators": {
+      "$ref": "#/definitions/codeGenerators"
+    }
+  },
+  "required": [
+    "codeGenerators"
+  ],
+  "definitions": {
+    "codeGenerators": {
+      "description": "Используемый генератор кода. Используется только первый указанный.",
+      "type": "object",
+      "properties": {
+        "openApiToCSharpClient": {
+          "description": "Генерирует клиента на ",
+          "$ref": "#/definitions/csClientGeneratorSettings"
+        },
+        "openApiToCSharpController": {
+          "$ref": "#/definitions/csControllerGeneratorSettings"
+        },
+        "openApiToTypeScriptClient": {
+          "$ref": "#/definitions/tsClientGeneratorSettings"
+        }
+      }
+    },
+    "codeGeneratorSettingsBase": {
+      "properties": {
+        "excludedTypeNames": {
+          "description": "Перечень типов исключаемых из генерации",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "generateDefaultValues": {
+          "type": "boolean",
+          "description": "Включает режим генерации значений по умолчанию для свойств"
+        },
+        "inlineNamedAny": {
+          "type": "boolean",
+          "description": "Value indicating whether named/referenced any schemas should be inlined or generated as class."
+        },
+        "templateDirectory": {
+          "type": "string",
+          "description": "Путь к каталогу с шаблонами"
+        }
+      }
+    },
+    "csGeneratorSettings": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/codeGeneratorSettingsBase"
+        },
+        {
+          "properties": {
+            "additionalNamespaceUsages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Дополнительные пространства имен подключаемые в файл"
+            },
+            "anyType": {
+              "type": "string",
+              "description": "Тип .NET используемый если не указан в схеме (default: object)",
+              "default": "object"
+            },
+            "arrayType": {
+              "type": "string",
+              "description": "Тип .NET используемый для массивов (default: ICollection)",
+              "default": "System.Collections.Generic.ICollection"
+            },
+            "arrayInstanceType": {
+              "type": "string",
+              "description": "Тип .NET используемый для создания экземпляра массивов (default: Collection)",
+              "default": "System.Collections.ObjectModel.Collection"
+            },
+            "arrayBaseType": {
+              "type": "string",
+              "description": "Тип .NET используемый как базовый для массивов (default: Collection)",
+              "default": "System.Collections.ObjectModel.Collection"
+            },
+            "classStyle": {
+              "type": "string",
+              "description": "Стиль объявлемых сущностей (default: Poco). Poco - обычные классы, Inpc - класс с реализацией INotifyPropertyChanged, Prism - Клас с реализацией базового класса Prism, Record - рекорд",
+              "enum": [
+                "Poco",
+                "Inpc",
+                "Prism",
+                "Record"
+              ],
+              "default": "Poco"
+            },
+            "dateType": {
+              "type": "string",
+              "description": "Тип .NET используемый для дат (default: DateTimeOffset)",
+              "default": "DateTimeOffset"
+            },
+            "dateTimeType": {
+              "type": "string",
+              "description": "Тип .NET используемый для дат со времинем (default: DateTimeOffset)",
+              "default": "DateTimeOffset"
+            },
+            "dictionaryType": {
+              "type": "string",
+              "description": "Тип .NET используемый для словорей (default: IDictionary)",
+              "default": "System.Collections.Generic.IDictionary"
+            },
+            "dictionaryInstanceType": {
+              "type": "string",
+              "description": "Тип .NET используемый для создания экземпляра словорей (default: Dictionary)",
+              "default": "System.Collections.Generic.Dictionary"
+            },
+            "dictionaryBaseType": {
+              "type": "string",
+              "description": "Тип .NET используемый как базовый для словорей (default: Dictionary)",
+              "default": "System.Collections.Generic.Dictionary"
+            },
+            "enforceFlagEnums": {
+              "type": "boolean",
+              "description": "Indicating whether enums should be always generated as bit flags (default: false)",
+              "default": false
+            },
+            "generateDataAnnotations": {
+              "type": "boolean",
+              "description": "Включает генерацию атрибутов из System.ComponentModel.Annotations (default: true)",
+              "default": true
+            },
+            "generateImmutableArrayProperties": {
+              "type": "boolean",
+              "description": "Не генерировать сеттер для свойств с масивами, которые не принимают null (default: false)",
+              "default": false
+            },
+            "generateImmutableDictionaryProperties": {
+              "type": "boolean",
+              "description": "Не генерировать сеттер для свойств со справочниками, которые не принимают null (default: false)",
+              "default": false
+            },
+            "generateJsonMethods": {
+              "type": "boolean",
+              "description": "Генерировать методы ToJson() и FromJson() (default: false)",
+              "default": false
+            },
+            "generateOptionalPropertiesAsNullable": {
+              "type": "boolean",
+              "description": "Генерировать опциональные свойства (не required) как nullable (default: false).",
+              "default": false
+            },
+            "generateNativeRecords": {
+              "type": "boolean",
+              "description": "Generate C# 9.0 record types instead of record-like classes. (default: false)",
+              "default": false
+            },
+            "generateNullableReferenceTypes": {
+              "type": "boolean",
+              "description": "Включает поддержку Nullable Reference Types. (default: false)",
+              "default": false
+            },
+            "handleReferences": {
+              "type": "boolean",
+              "description": "Indicating whether to use preserve references handling (All) in the JSON serializer (default: false)",
+              "default": false
+            },
+            "inlineNamedDictionaries": {
+              "type": "boolean",
+              "description": "Indicating whether named/referenced dictionaries should be inlined or generated as class with dictionary inheritance. (default: false)",
+              "default": false
+            },
+            "InlineNamedTuples ": {
+              "type": "boolean",
+              "description": "Indicating whether named/referenced tuples should be inlined or generated as class with tuple inheritance. (default: false)",
+              "default": false
+            },
+            "inlineNamedArrays ": {
+              "type": "boolean",
+              "description": "Indicating whether named/referenced arrays should be inlined or generated as class with array inheritance. (default: false)",
+              "default": false
+            },
+            "jsonConverters": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Перечень имен классов конверторов используемых при чтении и записи JSON"
+            },
+            "jsonLibrary": {
+              "description": "Библиотека используемая для работы с JSON (default: NewtonsoftJson)",
+              "type": "string",
+              "default": "NewtonsoftJson",
+              "enum": [
+                "NewtonsoftJson",
+                "SystemTextJson"
+              ]
+            },
+            "jsonSerializerSettingsTransformationMethod": {
+              "type": "string",
+              "description": "Имя статического метода настройки параметров сериализации"
+            },
+            "namespace": {
+              "type": "string",
+              "description": "Пространство имен в которое будут добавлены типы"
+            },
+            "numberType": {
+              "type": "string",
+              "description": "Тип .NET используемый для чисел без указания формата (default: double)",
+              "default": "double"
+            },
+            "numberDoubleType": {
+              "type": "string",
+              "description": "Тип .NET используемый для чисел формата double (default: double)",
+              "default": "double"
+            },
+            "numberFloatType": {
+              "type": "string",
+              "description": "Тип .NET используемый для чисел формата float (default: float)",
+              "default": "float"
+            },
+            "numberDecimalType": {
+              "type": "string",
+              "description": "Тип .NET используемый для чисел формата decimal (default: decimal)",
+              "default": "decimal"
+            },
+            "requiredPropertiesMustBeDefined": {
+              "type": "boolean",
+              "description": "Sets Required.Always when the property is required. (default: true)",
+              "default": true
+            },
+            "timeType": {
+              "type": "string",
+              "description": "Тип .NET используемый для времени (default: TimeSpan)",
+              "default": "TimeSpan"
+            },
+            "timeSpanType": {
+              "type": "string",
+              "description": "Тип .NET используемый для времени (default: TimeSpan)",
+              "default": "TimeSpan"
+            },
+            "typeAccessModifier": {
+              "type": "string",
+              "description": "Модификатор доступа генерируемых классов и интерфейсов (default: public)",
+              "default": "public"
+            }
+          }
+        }
+      ]
+    },
+    "tsGeneratorSettings": {
+      "type": "object",
+      "properties": {
+        "classTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The type names which always generate plain TypeScript classes."
+        },
+        "convertConstructorInterfaceData": {
+          "type": "boolean",
+          "description": "Indicating whether POJO objects in the constructor data are converted to DTO instances (GenerateConstructorInterface must be enabled, default: false).",
+          "default": false
+        },
+        "convertDateToLocalTimezone": {
+          "type": "boolean",
+          "description": "Whether to use UTC (default) or local time zone when deserializing dates 'yyyy-MM-dd' (default: 'false').\nOnly applicable if DateTimeType is Date.\nOther DateTimeTypes use local timezone by default.",
+          "default": false
+        },
+        "dateTimeType": {
+          "type": "string",
+          "default": "Date",
+          "description": "Тип используемый для представления данных даты и времени. default: Date"
+        },
+        "enumStyle": {
+          "type": "string",
+          "default": "Enum",
+          "description": "Стиль формирования сущностей с укзанием enum. default: Enum",
+          "enum": [
+            "Enum",
+            "StringLiteral"
+          ]
+        },
+        "exportTypes": {
+          "type": "boolean",
+          "description": "Включает экспорт всех классов и перечислений. default: true",
+          "default": true
+        },
+        "extendedClasses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of extended classes (the classes must be implemented in the ExtensionCode)."
+        },
+        "extensionCode": {
+          "type": "string",
+          "description": "The extension code to append to the generated code."
+        },
+        "generateCloneMethod": {
+          "type": "boolean",
+          "description": "Включает генерацию метода clone() в DTO. default: false",
+          "default": false
+        },
+        "generateConstructorInterface": {
+          "type": "boolean",
+          "description": "Indicating whether to generate an class interface which is used in the constructor to initialize the class (default: true)",
+          "default": true
+        },
+        "generateTypeCheckFunctions": {
+          "type": "boolean",
+          "description": "Indicating whether to generate type check functions (for type style interface only, default: false).",
+          "default": false
+        },
+        "handleReferences": {
+          "type": "boolean",
+          "description": "Indicating whether to handle JSON references (supports $ref, $id, $values, default: false)",
+          "default": false
+        },
+        "inlineNamedDictionaries": {
+          "type": "boolean",
+          "description": "Indicating whether named/referenced dictionaries should be inlined or generated as class with an indexer. default: false",
+          "default": false
+        },
+        "markOptionalProperties": {
+          "type": "boolean",
+          "default": false,
+          "description": "Включает добавление '?' к необязательным свойствам. default: false"
+        },
+        "moduleName": {
+          "type": "string",
+          "default": "",
+          "description": "Имя модуля. default: ''"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Имя пространства имен. default: ''",
+          "default": ""
+        },
+        "nullValue": {
+          "type": "string",
+          "enum": [
+            "Null",
+            "Undefined"
+          ],
+          "default": "Undefined",
+          "description": "The TypeScript null value."
+        },
+        "typeScriptVersion": {
+          "type": "number",
+          "default": 2.7,
+          "description": "Целевая версия TS"
+        },
+        "typeStyle": {
+          "type": "string",
+          "default": "Class",
+          "description": "Указывает используемый способ описания DTO. default: Class",
+          "enum": [
+            "Class",
+            "Interface",
+            "KnockoutClass"
+          ]
+        },
+        "useLeafType": {
+          "type": "boolean",
+          "description": "Generate leaf types for an object with discriminator (default: false).",
+          "default": false
+        }
+      },
+      "dependencies": {
+        "convertConstructorInterfaceData": [
+          "generateConstructorInterface"
+        ]
+      }
+    },
+    "replaceNameCollectionSettings": {
+      "type": "object",
+      "properties": {
+        "replaceNameCollection": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Список замен символов. Имя свойства представляет замещаемый символ, в значене подставляемый"
+        }
+      }
+    },
+    "clientGeneratorBaseSettings": {
+      "type": "object",
+      "properties": {
+        "className": {
+          "type": "string",
+          "description": "Имя генерируемого класса. Можно использовать '{controller}' для подстановки имени в случае разбивки перечня операций на несколько классов."
+        },
+        "excludedParameterNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Перечень имен праметров исключаемых из всех опереаций."
+        },
+        "generateClientClasses": {
+          "type": "boolean",
+          "description": "Генерировать классы клиента (default: true)",
+          "default": true
+        },
+        "generateClientInterfaces": {
+          "type": "boolean",
+          "description": "Генерировать интерфейс, который будет реализовывать клиент (default: false). Требуется включенная генерация класса",
+          "default": false
+        },
+        "generateDtoTypes": {
+          "type": "boolean",
+          "description": "Генерация типов представляющих сущности API (default: true)",
+          "default": true
+        },
+        "generateOptionalParameters": {
+          "type": "boolean",
+          "description": "Добавляет значения по умолчанию для опциональных параметров метода (default: false)",
+          "default": false
+        },
+        "generateResponseClasses": {
+          "type": "boolean",
+          "description": "Генерация класса обертки ответа (default: false)",
+          "default": false
+        },
+        "operationGenerationMode": {
+          "type": "string",
+          "description": "Режим генерации операций. (default: MultipleClientsFromOperationIdOperationNameGenerator). Возможные значения https://github.com/RicoSuter/NSwag/blob/master/src/NSwag.Commands/Commands/CodeGeneration/OperationGenerationMode.cs"
+        },
+        "responseClass": {
+          "type": "string",
+          "description": "Имя класса используемого для оборачивания результата (supports the '{controller}' placeholder)"
+        },
+        "suppressClientInterfacesOutput": {
+          "type": "boolean",
+          "description": "Indicating whether to generate the output of interfaces for the client classes (default: false).",
+          "default": false
+        },
+        "suppressClientClassesOutput": {
+          "type": "boolean",
+          "description": "Indicating whether to generate the output of client types (default: false).",
+          "default": false
+        },
+        "wrapResponses": {
+          "type": "boolean",
+          "description": "Включает обрачивание результаты выполнения. Для ограничения списка методов заполните wrapResponseMethods.",
+          "default": false
+        },
+        "wrapResponseMethods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Список методов которые должны быть обернуты (\"ControllerName.MethodName\", WrapResponses должен быть true)."
+        }
+      }
+    },
+    "csGeneratorBaseSettings": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/csGeneratorSettings"
+        },
+        {
+          "$ref": "#/definitions/clientGeneratorBaseSettings"
+        },
+        {
+          "$ref": "#/definitions/replaceNameCollectionSettings"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "additionalContractNamespaceUsages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional contract namespace usages."
+        },
+        "parameterArrayType": {
+          "type": "string",
+          "description": "Тип используемый для массивов передаваемых в параметры метода (default: System.Collections.Generic.IEnumerable)",
+          "default": "System.Collections.Generic.IEnumerable"
+        },
+        "parameterDictionaryType": {
+          "type": "string",
+          "description": "Тип используемый для словарей передаваемых в параметры метода (default: System.Collections.Generic.IDictionary)",
+          "default": "System.Collections.Generic.IDictionary"
+        },
+        "responseArrayType": {
+          "type": "string",
+          "description": "Тип используемый для массивов возвращаемых из метода (default: System.Collections.Generic.ICollection)",
+          "default": "System.Collections.Generic.ICollection"
+        },
+        "responseDictionaryType": {
+          "type": "string",
+          "description": "Тип используемый для словарей возвращаемых из метода (default: System.Collections.Generic.IDictionary)",
+          "default": "System.Collections.Generic.IDictionary"
+        }
+      }
+    },
+    "csClientGeneratorSettings": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/csGeneratorBaseSettings"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "clientBaseClass": {
+              "type": "string",
+              "description": "Полное имя базового класса"
+            },
+            "clientBaseInterface": {
+              "type": "string",
+              "description": "Полное имя базового интерфейса"
+            },
+            "clientClassAccessModifier": {
+              "type": "string",
+              "description": "Модификатор доступа классов клиента. (default: public)",
+              "default": "public"
+            },
+            "configurationClass": {
+              "type": "string",
+              "description": "Полное имя класс конфигурации. Требует заданного ClientBaseClass."
+            },
+            "exceptionClass": {
+              "type": "string",
+              "description": "Имя класса исключения. Поддерживает подстановку '{controller}' (default: ApiException)",
+              "default": "ApiException"
+            },
+            "exposeJsonSerializerSettings": {
+              "type": "boolean",
+              "description": "Value indicating whether to expose the JsonSerializerSettings property (default: false)",
+              "default": false
+            },
+            "disposeHttpClient": {
+              "type": "boolean",
+              "description": "Включает вызов Dispose для HttpClient. Если HttpClient передан в класс он не освобождается. (default: true)",
+              "default": true
+            },
+            "generateBaseUrlProperty": {
+              "type": "boolean",
+              "description": "Indicating whether to generate the BaseUrl property, must be defined on the base class otherwise (default: true)",
+              "default": true
+            },
+            "generateExceptionClasses": {
+              "type": "boolean",
+              "description": "Включает генрацию класса исключения (default: true)",
+              "default": true
+            },
+            "generatePrepareRequestAndProcessResponseAsAsyncMethods ": {
+              "type": "boolean",
+              "description": "Gets or sets a value indicating whether to create PrepareRequest and ProcessResponse as async methods, or as partial synchronous methods.\nIf value is set to true, PrepareRequestAsync and ProcessResponseAsync methods must be implemented as part of the client base class (if it has one) or as part of the partial client class.\nIf value is set to false, PrepareRequest and ProcessResponse methods will be partial methods, and implement them is optional."
+            },
+            "generateSyncMethods": {
+              "type": "boolean",
+              "description": "Включает генерацию синхронных методов (default: false)",
+              "default": false
+            },
+            "generateUpdateJsonSerializerSettingsMethod": {
+              "type": "boolean",
+              "description": "Indicating whether to generate the UpdateJsonSerializerSettings method (must be implemented in the base class otherwise, default: true)",
+              "default": true
+            },
+            "httpClientType": {
+              "type": "string",
+              "description": "Gets or sets the HttpClient type which will be used in the generation of the client code. By default the System.Net.Http.HttpClient will be used, but this can be overridden. Just keep in mind that the type you specify has the same default HttpClient method signatures."
+            },
+            "injectHttpClient": {
+              "type": "boolean",
+              "description": "Включает возможность передачи экземпляра HttpClient в класс клиента. (default: true)",
+              "default": true
+            },
+            "parameterDateFormat": {
+              "type": "string",
+              "description": "format for Date type method parameters (default: \"yyyy-MM-dd\").",
+              "default": "yyyy-MM-dd"
+            },
+            "parameterDateTimeFormat": {
+              "type": "string",
+              "description": "Format for DateTime type method parameters (default: \"s\")",
+              "default": "s"
+            },
+            "protectedMethods": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Имена методов которые должны иметь модификатор protected (\"classname.methodname\")"
+            },
+            "queryNullValue": {
+              "type": "string",
+              "description": "The null value used for query parameters which are null (default: '').",
+              "default": ""
+            },
+            "serializeTypeInformation": {
+              "type": "boolean",
+              "description": "Indicating whether to serialize the type information in a $type property (not recommended, also sets TypeNameHandling = Auto)"
+            },
+            "useHttpClientCreationMethod": {
+              "type": "boolean",
+              "description": "Указывает что для получения экземпляра HttpClient нужно вызывать метод CreateHttpClientAsync (default:false)",
+              "default": false
+            },
+            "useBaseUrl": {
+              "type": "boolean",
+              "description": "Indicating whether to use and expose the base URL (default: true)",
+              "default": true
+            },
+            "useHttpRequestMessageCreationMethod": {
+              "type": "boolean",
+              "description": "Указывает что нужно вызывать метод CreateHttpRequestMessageAsync для создания экземпляра HttpRequestMessageю (default: false)",
+              "default": false
+            },
+            "useRequestAndResponseSerializationSettings": {
+              "type": "boolean",
+              "description": "Indicating whether to generate different request and response serialization settings (default: false)",
+              "default": false
+            },
+            "wrapDtoExceptions": {
+              "type": "boolean",
+              "description": "Оборачивать исключения от DTO в свое исключение. (default: true)",
+              "default": true
+            }
+          },
+          "dependencies": {
+            "configurationClass": [
+              "clientBaseClass"
+            ]
+          }
+        }
+      ],
+      "required": [
+        "namespace"
+      ]
+    },
+    "csControllerGeneratorSettings": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/csGeneratorBaseSettings"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "basePath": {
+              "type": "string",
+              "description": "The base path on which the API is served, which is relative to the Host."
+            },
+            "controllerBaseClass": {
+              "type": "string",
+              "description": "The full name of the base class."
+            },
+            "controllerStyle": {
+              "type": "string",
+              "enum": [
+                "Partial",
+                "Abstract"
+              ],
+              "description": "The controller generation style (partial, abstract; default: partial).",
+              "default": "Partial"
+            },
+            "controllerTarget": {
+              "type": "string",
+              "enum": [
+                "AspNet",
+                "AspNetCore"
+              ],
+              "description": "The controller target framework.",
+              "default": "AspNetCore"
+            },
+            "generateModelValidationAttributes": {
+              "type": "boolean",
+              "description": "Value indicating whether to add model validation attributes. (default: false)",
+              "default": false
+            },
+            "routeNamingStrategy": {
+              "type": "string",
+              "enum": [
+                "None",
+                "OperationId"
+              ],
+              "description": "The strategy for naming routes (default: CSharpRouteNamingStrategy.None).",
+              "default": "None"
+            },
+            "useActionResultType": {
+              "type": "boolean",
+              "description": "Indicating whether ASP.Net Core (2.1) ActionResult type is used (default: false).",
+              "default": false
+            },
+            "useCancellationToken": {
+              "type": "boolean",
+              "description": "Indicating whether to allow adding cancellation token (default: false)",
+              "default": false
+            }
+          }
+        }
+      ]
+    },
+    "tsClientGeneratorSettings": {
+      "description": "Генерация клиента на языке TypeScript",
+      "allOf": [
+        {
+          "$ref": "#/definitions/codeGeneratorSettingsBase"
+        },
+        {
+          "$ref": "#/definitions/tsGeneratorSettings"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "baseUrlTokenName": {
+              "type": "string",
+              "description": "The token name for injecting the API base URL string (used in the Angular2 template, default: '').",
+              "default": ""
+            },
+            "clientBaseClass": {
+              "type": "string",
+              "description": "Базовый класс для клиента"
+            },
+            "configurationClass": {
+              "type": "string",
+              "description": "The full name of the configuration class (ClientBaseClass must be set)."
+            },
+            "exceptionClass": {
+              "type": "string",
+              "description": "Имя класса исключения. Поддерживает подстановку '{controller}' (default: ApiException)",
+              "default": "ApiException"
+            },
+            "importRequiredTypes": {
+              "type": "boolean",
+              "description": "Indicating whether required types should be imported (default: true).",
+              "default": true
+            },
+            "promiseType": {
+              "type": "string",
+              "description": "Целевая библиотека промайзов. default: Promise",
+              "default": "Promise",
+              "enum": [
+                "Promise",
+                "QPromise"
+              ]
+            },
+            "protectedMethods": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "The list of methods with a protected access modifier (\"classname.methodname\")."
+            },
+            "queryNullValue": {
+              "type": "string",
+              "description": "The null value used for query parameters which are null (default: '').",
+              "default": ""
+            },
+            "template": {
+              "type": "string",
+              "description": "Шаблон формирования кода. default: Fetch",
+              "enum": [
+                "JQueryCallbacks",
+                "JQueryPromises",
+                "AngularJS",
+                "Angular",
+                "Fetch",
+                "Aurelia",
+                "Axios"
+              ],
+              "default": "Fetch"
+            },
+            "useAbortSignal": {
+              "type": "boolean",
+              "description": "Indicating whether to use the AbortSignal (Aurelia/Axios/Fetch template only, default: false).",
+              "default": false
+            },
+            "useGetBaseUrlMethod": {
+              "type": "boolean",
+              "description": "Indicating whether to use the 'getBaseUrl(defaultUrl: string)' from the base class (default: false).",
+              "default": false
+            },
+            "useTransformOptionsMethod": {
+              "type": "boolean",
+              "description": "Indicating whether to call 'transformOptions' on the base class or extension class.",
+              "default": false
+            },
+            "useTransformResultMethod": {
+              "type": "boolean",
+              "description": "Indicating whether to call 'transformResult' on the base class or extension class.",
+              "default": false
+            },
+            "withCredentials": {
+              "type": "boolean",
+              "description": "Indicating whether to set the withCredentials flag. default: false",
+              "default": false
+            },
+            "wrapDtoExceptions": {
+              "type": "boolean",
+              "description": "Оборачивать исключения от DTO в свое исключение. default: false",
+              "default": false
+            }
+          },
+          "dependencies": {
+            "configurationClass": [
+              "clientBaseClass"
+            ]
+          },
+          "if": {
+            "properties": {
+              "template": {
+                "const": "Angular"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "httpClass": {
+                "type": "string",
+                "default": "HttpClient",
+                "description": "The HTTP service class (applies only for the Angular template, default: HttpClient)."
+              },
+              "includeHttpContext": {
+                "type": "boolean",
+                "description": "Indicating whether to include the httpContext parameter (Angular template only, default: false).",
+                "default": false
+              },
+              "injectionTokenType": {
+                "type": "string",
+                "description": "The injection token type (applies only for the Angular template).",
+                "enum": [
+                  "OpaqueToken",
+                  "InjectionToken"
+                ],
+                "default": "OpaqueToken"
+              },
+              "rxJsVersion": {
+                "type": "number",
+                "description": "The RxJs version (Angular template only, default: 6.0)",
+                "default": 6.0
+              },
+              "useSingletonProvider": {
+                "type": "boolean",
+                "description": "Indicating whether to use the Angular 6 Singleton Provider (Angular template only, default: false).",
+                "default": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}
