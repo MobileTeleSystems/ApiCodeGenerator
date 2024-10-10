@@ -12,7 +12,7 @@ namespace ApiCodeGenerator.Core.Tests.Infrastructure
         public FakeCodeGenerator(GeneratorContext context, Dictionary<string, string>? additionalVars = null)
         {
             Context = context;
-            Settings = context.GetSettings<FakeCodeGeneratorSettings>(additionalVariables: additionalVars);
+            Settings = context.GetSettings<FakeCodeGeneratorSettings>(null, additionalVariables: additionalVars);
         }
 
         public GeneratorContext Context { get; }

@@ -10,7 +10,7 @@ namespace ApiCodeGenerator.Core.ExtensionManager
     /// <summary>
     /// Информация о расширениях.
     /// </summary>
-    public class Extensions : IExtensions
+    internal class Extensions : IExtensions
     {
         public Extensions(
             IReadOnlyDictionary<string, ContentGeneratorFactory>? codeGenerators = null,

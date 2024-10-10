@@ -18,8 +18,8 @@ public class CSharpGeneratorBaseSettings : ClientGeneratorBaseSettings
 
         CSharpGeneratorSettings.TemplateFactory = new DefaultTemplateFactory(CSharpGeneratorSettings, new[]
         {
-            typeof(CSharpGeneratorBaseSettings).GetType().Assembly,
-            typeof(CSharpGeneratorSettings).GetType().Assembly,
+            GetType().Assembly,
+            typeof(CSharpGeneratorSettings).Assembly,
         });
 
         ResponseArrayType = "System.Collections.Generic.ICollection";

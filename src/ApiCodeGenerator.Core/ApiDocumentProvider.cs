@@ -43,18 +43,26 @@ namespace ApiCodeGenerator.Core
                     else
                     {
                         if (Uri.TryCreate(documentSource.FromDocument.Url, UriKind.Absolute, out var url))
+                        {
                             return await FromUrlAsync(url);
+                        }
                         else
+                        {
                             return Failed("Invalid url format", null);
+                        }
                     }
                 }
                 else
                 {
                     var json = documentSource.FromDocument.Json!;
                     if (IsPath(json))
+                    {
                         return await FromFileAsync(json);
+                    }
                     else
+                    {
                         return FromContent(json, null);
+                    }
                 }
             }
 
@@ -62,10 +70,14 @@ namespace ApiCodeGenerator.Core
             {
                 var data = documentSource.JsonSchemaToOpenApi;
                 if (string.IsNullOrEmpty(data.Name))
+                {
                     return Failed("jsonSchemaToOpenApi.name must be not null or empty", null);
+                }
 
                 if (string.IsNullOrEmpty(data.Schema))
+                {
                     return Failed("jsonSchemaToOpenApi.schema must be not null or empty", null);
+                }
 
                 if (IsPath(data.Schema))
                 {

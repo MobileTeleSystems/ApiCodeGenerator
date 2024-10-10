@@ -23,7 +23,9 @@ internal static class SettingsHelpers
         {
             var mode = ((JToken?)value)?.Value<string>();
             if (mode is not null)
+            {
                 SetOperationMode(extensions, settings, mode);
+            }
         }
         else if (propertyName.Equals("replaceNameCollection", StringComparison.OrdinalIgnoreCase))
         {
@@ -31,7 +33,9 @@ internal static class SettingsHelpers
             {
                 var replacementData = ((JObject)value).ToObject<IDictionary<string, string>>();
                 if (replacementData is not null)
+                {
                     SetReplaceCollection(settings, replacementData);
+                }
             }
             else
             {

@@ -85,7 +85,9 @@ namespace ApiCodeGenerator.Core
             };
 
             if (variables?.Any() == true)
+            {
                 settings.Converters.Add(new VariableConverter(variables));
+            }
 
             var jsonSerializer = JsonSerializer.Create(settings);
             Document? document;
@@ -137,7 +139,9 @@ namespace ApiCodeGenerator.Core
                         curSrcToken = curSrcToken[curProp.PropertyName] as JObject;
 
                         if (curSrcToken is null || curTargToken is null)
+                        {
                             break;
+                        }
 
                         curContract = contractResolver.ResolveContract(curProp.PropertyType);
                     }
