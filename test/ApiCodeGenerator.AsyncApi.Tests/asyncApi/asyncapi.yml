@@ -28,19 +28,9 @@ servers:
         description: "This server is a remote server. Not exposed by the application"
       - name: "visibility:private"
         description: "This resource is private and only available to certain users"
+
   mtls-connections:
-    url: test.mykafkacluster.org:28092
-    protocol: kafka-secure
-    description: Test broker secured with X509
-    security:
-      - certs: []
-    tags:
-      - name: "env:test-mtls"
-        description: "This environment is meant for running internal tests through mtls"
-      - name: "kind:remote"
-        description: "This server is a remote server. Not exposed by the application"
-      - name: "visibility:private"
-        description: "This resource is private and only available to certain users"
+    $ref: "#/components/servers/mtls-connections"
 
 defaultContentType: application/json
 
@@ -194,3 +184,32 @@ components:
           clientId:
             type: string
             enum: ["my-app-id"]
+
+  servers:
+    mtls-connections:
+      url: test.mykafkacluster.org:28092
+      protocol: kafka-secure
+      description: Test broker secured with X509
+      security:
+        - certs: []
+      tags:
+        - name: "env:test-mtls"
+          description: "This environment is meant for running internal tests through mtls"
+        - name: "kind:remote"
+          description: "This server is a remote server. Not exposed by the application"
+        - name: "visibility:private"
+          description: "This resource is private and only available to certain users"
+      variables:
+        someRefVariable:
+          $ref: "#/components/serverVariables/someRefVariable"
+        someVariable:
+          description: Some variable
+
+  serverVariables:
+    someRefVariable:
+      description: Some ref variable
+      default: def
+      enum:
+        - def
+      examples:
+        - exam
