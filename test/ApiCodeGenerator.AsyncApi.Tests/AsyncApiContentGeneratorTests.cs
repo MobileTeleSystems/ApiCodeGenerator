@@ -1,4 +1,5 @@
 using ApiCodeGenerator.AsyncApi.DOM;
+using NUnit.Framework.Constraints;
 
 namespace ApiCodeGenerator.AsyncApi.Tests;
 
@@ -150,5 +151,39 @@ public class AsyncApiContentGeneratorTests
         Assert.That(document.Components.Schemas["turnOnOffPayload"]?.ActualProperties,
             Is.Not.Null
             .And.ContainKey("command"));
+
+        //Read server object
+        Assert.That(document.Servers["scram-connections"],
+            Is.Not.Null
+            .And.Property("Url").EqualTo("test.mykafkacluster.org:18092")
+            .And.Property("Protocol").EqualTo("kafka-secure")
+            .And.Property("Description").EqualTo("Test broker secured with scramSha256"));
+
+        // Resolve $ref in servers
+        Assert.That(document.Servers["mtls-connections"],
+            Is.Not.Null
+            .And.Property("Reference").EqualTo(document.Components.Servers["mtls-connections"]));
+
+        // Resolve $ref in server variables
+        Assert.Multiple(() =>
+        {
+            var variables = document.Components.Servers["mtls-connections"].Variables;
+            Assert.That(variables,
+                Is.Not.Null
+             .And.ContainKey("someRefVariable")
+             .And.ContainKey("someVariable"));
+
+            Assert.That(variables!["someRefVariable"],
+                Is.Not.Null
+                .And.Property("Reference").EqualTo(document.Components.ServerVariables["someRefVariable"]));
+        });
+
+        //Read server variables
+        Assert.That(document.Components.ServerVariables["someRefVariable"],
+        new PredicateConstraint<ServerVariable>(a =>
+            a.Description == "Some ref variable"
+            && a.Enum?.FirstOrDefault() == "def"
+            && a.Default == "def"
+            && a.Examples?.FirstOrDefault() == "exam"));
     }
 }
