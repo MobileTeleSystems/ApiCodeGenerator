@@ -58,12 +58,8 @@ public partial class DefaultTemplateFactory : ITemplateFactory
         {
             if (model is Fluid.TemplateContext templateContext)
             {
-                var currentTemplate = (string)templateContext.AmbientValues["__template"];
+                var currentTemplate = ((string)templateContext.AmbientValues["__template"]).TrimEnd('!');
                 template = template.Substring(0, template.Length - BASE_TMPL_SUFFIX.Length);
-                if (!template.EndsWith("!"))
-                {
-                    template += "!";
-                }
 
                 providers = providers.SkipWhile(p => currentTemplate != p.GetFullName(template, language)).Skip(1);
             }
