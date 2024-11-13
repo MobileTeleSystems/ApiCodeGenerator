@@ -78,13 +78,19 @@ namespace ApiCodeGenerator.OpenApi
 
         protected static T InvokePreprocessors<T>(T data,
             Preprocessors? preprocessors,
-            string? filePath)
+            string? filePath,
+            ILogger? logger)
         {
             if (preprocessors?.TryGetValue(typeof(T), out var openApiDocumentPreprocessors) == true)
             {
-                foreach (var processor in openApiDocumentPreprocessors.OfType<Func<T, string?, T>>())
+                foreach (var processor in openApiDocumentPreprocessors)
                 {
-                    data = processor.Invoke(data, filePath);
+                    data = processor switch
+                    {
+                        Func<T, string?, T> p => p.Invoke(data, filePath),
+                        Func<T, string?, ILogger?, T> p => p.Invoke(data, filePath, logger),
+                        _ => data,
+                    };
                 }
             }
 
@@ -118,15 +124,14 @@ namespace ApiCodeGenerator.OpenApi
         protected static async Task<OpenApiDocument> ReadAndProcessOpenApiDocument(GeneratorContext context)
         {
             var documentStr = context.DocumentReader!.ReadToEnd();
-            documentStr = InvokePreprocessors<string>(documentStr, context.Preprocessors, context.DocumentPath);
+            documentStr = InvokePreprocessors<string>(documentStr, context.Preprocessors, context.DocumentPath, context.Logger);
 
             var openApiDocument = !(documentStr.StartsWith("{") && documentStr.EndsWith("}"))
                 ? await OpenApiYamlDocument.FromYamlAsync(documentStr)
                 : await OpenApiDocument.FromJsonAsync(documentStr);
 
-            openApiDocument = InvokePreprocessors<OpenApiDocument>(openApiDocument, context.Preprocessors, context.DocumentPath);
+            openApiDocument = InvokePreprocessors<OpenApiDocument>(openApiDocument, context.Preprocessors, context.DocumentPath, context.Logger);
             return openApiDocument;
         }
-
     }
 }

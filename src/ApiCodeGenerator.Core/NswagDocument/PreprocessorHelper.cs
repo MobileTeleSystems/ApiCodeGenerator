@@ -76,6 +76,16 @@ namespace ApiCodeGenerator.Core.NswagDocument
                 return (retType, method.CreateDelegate(delegateType, processor));
             }
 
+            if (retType != typeof(void)
+                && param.Length == 3
+                && param[0].ParameterType == retType
+                && param[1].ParameterType == typeof(string)
+                && param[2].ParameterType == typeof(ILogger))
+            {
+                var delegateType = typeof(Func<,,,>).MakeGenericType(retType, typeof(string), typeof(ILogger), retType);
+                return (retType, method.CreateDelegate(delegateType, processor));
+            }
+
             return null;
         }
     }
