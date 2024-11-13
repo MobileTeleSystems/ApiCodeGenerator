@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ApiCodeGenerator.Abstraction
 {
-    internal interface ILogger
+    public interface ILogger
     {
         void LogError(string? sourceFile, string message, params object[] messageArgs);
 

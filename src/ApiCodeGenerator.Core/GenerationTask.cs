@@ -203,6 +203,7 @@ namespace ApiCodeGenerator.Core
                 DocumentReader = result?.Reader,
                 Preprocessors = PreprocessorHelper.GetPreprocessors(_extensions, documentGenerator?.Preprocessors, Log),
                 DocumentPath = result?.FilePath,
+                Logger = Log,
             };
         }
 

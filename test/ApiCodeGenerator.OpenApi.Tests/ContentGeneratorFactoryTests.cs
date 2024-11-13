@@ -82,13 +82,12 @@ namespace ApiCodeGenerator.OpenApi.Tests
             const string schemaName = nameof(schemaName);
             var settingsJson = new JObject();
 
-            Func<string, string?, string> dlgt =
-            (doc, fileName) => new Infrastructure.FakeTextPreprocessor("{}").Process(doc, fileName);
+            Func<string, string?, string> dlgt = new FakeTextPreprocessor("{}").Process;
 
             var context = CreateContext(settingsJson);
 
             context.Preprocessors = new Preprocessors(
-                new Dictionary<Type, Delegate[]> { [typeof(string)] = new Delegate[] { dlgt } });
+                new Dictionary<Type, Delegate[]> { [typeof(string)] = [dlgt] });
 
             var gen = (CSharpClientContentGenerator)await CSharpClientContentGenerator.CreateAsync(context);
 
@@ -101,13 +100,40 @@ namespace ApiCodeGenerator.OpenApi.Tests
         }
 
         [Test]
+        public async Task LoadOpenApiDocument_WithTextPreprocess_Log()
+        {
+            const string schemaName = nameof(schemaName);
+            const string filePath = "cd4bed67-1cc0-44a2-8dd1-30a0bd0c1dee";
+            var settingsJson = new JObject();
+
+            Func<string, string?, Abstraction.ILogger?, string> dlgt = new FakeTextPreprocessor("{}").Process;
+
+            var logger = new Mock<Abstraction.ILogger>();
+            var context = CreateContext(settingsJson);
+            context.Logger = logger.Object;
+            context.DocumentPath = filePath;
+
+            context.Preprocessors = new Preprocessors(
+                new Dictionary<Type, Delegate[]> { [typeof(string)] = [dlgt] });
+
+            var gen = (CSharpClientContentGenerator)await CSharpClientContentGenerator.CreateAsync(context);
+
+            var openApiDocument = GetDocument(gen.Generator);
+
+            Assert.NotNull(openApiDocument);
+            Assert.That(openApiDocument?.Definitions, Does.ContainKey(schemaName));
+            var sch = openApiDocument?.Definitions[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
+            Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"additionalProperties\":false,\"processed\":{}}"));
+            logger.Verify(l => l.LogWarning(filePath, It.IsAny<string>()));
+        }
+
+        [Test]
         public async Task LoadOpenApiDocument_WithModelPreprocess()
         {
             const string schemaName = nameof(schemaName);
             var settingsJson = new JObject();
 
-            Func<OpenApiDocument, string?, OpenApiDocument> dlgt =
-            (doc, fileName) => new Infrastructure.FakeModelPreprocessor("{}").Process(doc, fileName);
+            Func<OpenApiDocument, string?, OpenApiDocument> dlgt = new FakeModelPreprocessor("{}").Process;
 
             var context = CreateContext(settingsJson);
             context.DocumentReader = new StringReader("{\"definitions\":{\"" + schemaName + "\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\"}}}");
@@ -146,7 +172,7 @@ namespace ApiCodeGenerator.OpenApi.Tests
         {
             extension ??= new();
             return new GeneratorContext(
-                (t, s, v) => settingsJson.ToObject(t, s ?? new()),
+                (t, s, _) => settingsJson.ToObject(t, s ?? new()),
                 extension,
                 _variables)
             {

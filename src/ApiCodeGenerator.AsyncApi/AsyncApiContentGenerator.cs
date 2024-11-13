@@ -68,13 +68,19 @@ namespace ApiCodeGenerator.AsyncApi
 
         protected static T InvokePreprocessors<T>(T data,
             Preprocessors? preprocessors,
-            string? filePath)
+            string? filePath,
+            ILogger? logger)
         {
             if (preprocessors?.TryGetValue(typeof(T), out var documentPreprocessors) == true)
             {
-                foreach (var processor in documentPreprocessors.OfType<Func<T, string?, T>>())
+                foreach (var processor in documentPreprocessors)
                 {
-                    data = processor.Invoke(data, filePath);
+                    data = processor switch
+                    {
+                        Func<T, string?, T> p => p.Invoke(data, filePath),
+                        Func<T, string?, ILogger?, T> p => p.Invoke(data, filePath, logger),
+                        _ => data,
+                    };
                 }
             }
 
@@ -84,14 +90,14 @@ namespace ApiCodeGenerator.AsyncApi
         private static async Task<AsyncApiDocument> LoadDocumentAsync(GeneratorContext context)
         {
             var data = await context.DocumentReader!.ReadToEndAsync();
-            data = InvokePreprocessors<string>(data, context.Preprocessors, context.DocumentPath);
+            data = InvokePreprocessors<string>(data, context.Preprocessors, context.DocumentPath, context.Logger);
 
             var documentTask = data.StartsWith("{")
                 ? AsyncApiDocument.FromJsonAsync(data)
                 : AsyncApiDocument.FromYamlAsync(data);
             var document = await documentTask.ConfigureAwait(false);
 
-            document = InvokePreprocessors<AsyncApiDocument>(document, context.Preprocessors, context.DocumentPath);
+            document = InvokePreprocessors<AsyncApiDocument>(document, context.Preprocessors, context.DocumentPath, context.Logger);
             return document;
         }
 

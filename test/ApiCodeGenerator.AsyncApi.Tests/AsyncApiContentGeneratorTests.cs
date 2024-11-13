@@ -1,4 +1,7 @@
+using System.Collections.ObjectModel;
 using ApiCodeGenerator.AsyncApi.DOM;
+using Moq;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework.Constraints;
 
 namespace ApiCodeGenerator.AsyncApi.Tests;
@@ -81,6 +84,84 @@ public class AsyncApiContentGeneratorTests
         Assert.IsInstanceOf<PropertyNameGeneratorWithReplace>(settings.CSharpGeneratorSettings.PropertyNameGenerator);
         Assert.NotNull(settings.ParameterNameGenerator);
         Assert.IsInstanceOf<ParameterNameGeneratorWithReplace>(settings.ParameterNameGenerator);
+    }
+
+    [Test]
+    public async Task LoadApiDocument_WithTextPreprocess()
+    {
+        const string schemaName = nameof(schemaName);
+        var settingsJson = new JObject();
+
+        Func<string, string?, string> dlgt = new FakeTextPreprocessor("{}").Process;
+
+        var context = CreateContext(settingsJson);
+
+        context.Preprocessors = new Preprocessors(
+            new Dictionary<Type, Delegate[]> { [typeof(string)] = [dlgt] });
+
+        var gen = (FakeContentGenerator)await FakeContentGenerator.CreateAsync(context);
+
+        var apiDocument = gen.Document;
+
+        Assert.NotNull(apiDocument);
+        Assert.That(apiDocument?.Components?.Schemas, Does.ContainKey(schemaName));
+        var sch = apiDocument?.Components?.Schemas[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
+        Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"processed\":{}}"));
+    }
+
+    [Test]
+    public async Task LoadApiDocument_WithTextPreprocess_Log()
+    {
+        const string schemaName = nameof(schemaName);
+        const string filePath = "cd4bed67-1cc0-44a2-8dd1-30a0bd0c1dee";
+        var settingsJson = new JObject();
+
+        Func<string, string?, ILogger?, string> dlgt = new FakeTextPreprocessor("{}").Process;
+
+        var logger = new Mock<ILogger>();
+        var context = CreateContext(settingsJson);
+        context.Logger = logger.Object;
+        context.DocumentPath = filePath;
+
+        context.Preprocessors = new Preprocessors(
+            new Dictionary<Type, Delegate[]> { [typeof(string)] = [dlgt] });
+
+        var gen = (FakeContentGenerator)await FakeContentGenerator.CreateAsync(context);
+
+        var apiDocument = gen.Document;
+
+        Assert.NotNull(apiDocument);
+        Assert.That(apiDocument?.Components?.Schemas, Does.ContainKey(schemaName));
+        var sch = apiDocument?.Components?.Schemas[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
+        Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"processed\":{}}"));
+        logger.Verify(l => l.LogWarning(filePath, It.IsAny<string>()));
+    }
+
+    [Test]
+    public async Task LoadApiDocument_WithModelPreprocess()
+    {
+        const string schemaName = nameof(schemaName);
+        var settingsJson = new JObject();
+
+        Func<AsyncApiDocument, string?, AsyncApiDocument> dlgt = new FakeModelPreprocessor("{}").Process;
+
+        var context = CreateContext(settingsJson);
+        context.DocumentReader = new StringReader("{\"components\":{\"schemas\":{\"" + schemaName + "\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\"}}}}");
+
+        context.Preprocessors = new Preprocessors(
+            new Dictionary<Type, Delegate[]>
+            {
+                [typeof(AsyncApiDocument)] = [dlgt],
+            });
+
+        var gen = (FakeContentGenerator)await FakeContentGenerator.CreateAsync(context);
+
+        var apiDocument = gen.Document;
+
+        Assert.NotNull(apiDocument);
+        Assert.That(apiDocument?.Components?.Schemas, Does.ContainKey(schemaName));
+        var sch = apiDocument?.Components?.Schemas[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
+        Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"properties\":{\"processedModel\":{}}}"));
     }
 
     private static Func<Type, Newtonsoft.Json.JsonSerializer?, IReadOnlyDictionary<string, string>?, object?> GetSettingsFactory(string json)
@@ -185,5 +266,17 @@ public class AsyncApiContentGeneratorTests
             && a.Enum?.FirstOrDefault() == "def"
             && a.Default == "def"
             && a.Examples?.FirstOrDefault() == "exam"));
+    }
+
+    private GeneratorContext CreateContext(JObject settingsJson, Core.ExtensionManager.Extensions? extension = null)
+    {
+        extension ??= new();
+        return new GeneratorContext(
+            (t, s, _) => settingsJson.ToObject(t, s ?? new()),
+            extension,
+            new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()))
+        {
+            DocumentReader = new StringReader("{}"),
+        };
     }
 }
