@@ -12,12 +12,12 @@ internal class MSBuildLogger : ILogger
         _log = log;
     }
 
-    public void LogError(string? sourceFile, string message, params object[] messageArgs)
-        => _log.LogError(null, null, null, sourceFile, 0, 0, 0, 0, message, messageArgs);
+    public void LogError(string? errorCode, string? sourceFile, string message, params object[] messageArgs)
+        => _log.LogError(null, errorCode, null, sourceFile, 0, 0, 0, 0, message, messageArgs);
 
-    public void LogMessage(string message, params object[] messageArgs)
-        => _log.LogMessage(message, messageArgs);
+    public void LogMessage(string? code, string? sourceFile, string message, params object[] messageArgs)
+        => _log.LogMessage(null, code, null, sourceFile, 0, 0, 0, 0, Microsoft.Build.Framework.MessageImportance.Normal, message, messageArgs);
 
-    public void LogWarning(string? sourceFile, string message, params object[] messageArgs)
-        => _log.LogWarning(null, null, null, sourceFile, 0, 0, 0, 0, message, messageArgs);
+    public void LogWarning(string? warningCode, string? sourceFile, string message, params object[] messageArgs)
+        => _log.LogWarning(null, warningCode, null, sourceFile, 0, 0, 0, 0, message, messageArgs);
 }

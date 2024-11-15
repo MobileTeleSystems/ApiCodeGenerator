@@ -95,7 +95,8 @@ public class PreprocessorHelperTests
         };
 
         var ex = Assert.Throws<InvalidOperationException>(() => PreprocessorHelper.GetPreprocessors(extensions, ppDeclartaions, null));
-        Assert.AreEqual("Preprocessor with name 'pp' not registred.", ex.Message);
+        Assert.NotNull(ex);
+        Assert.AreEqual("Preprocessor with name 'pp' not registred.", ex!.Message);
     }
 
     [TestCase(typeof(PreprocessorInvalidCtor))]
@@ -113,7 +114,8 @@ public class PreprocessorHelperTests
         };
 
         var ex = Assert.Throws<InvalidOperationException>(() => PreprocessorHelper.GetPreprocessors(extensions, ppDeclartaions, null));
-        Assert.AreEqual("Constructor with one or zero parameters not found for preprocessor 'pp'", ex.Message);
+        Assert.NotNull(ex);
+        Assert.AreEqual("Constructor with one or zero parameters not found for preprocessor 'pp'", ex!.Message);
     }
 
     [Test]
@@ -135,6 +137,7 @@ public class PreprocessorHelperTests
         Assert.AreEqual(0, processors.Count);
         loggerMock.Verify(l =>
             l.LogWarning(
+                It.IsAny<string>(),
                 It.IsAny<string?>(),
                 "Method '{0}' skiped, because his signature not like Func<T,string,T>.",
                 new object[] { "System.String Process()" }));

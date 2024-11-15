@@ -124,7 +124,7 @@ namespace ApiCodeGenerator.OpenApi.Tests
             Assert.That(openApiDocument?.Definitions, Does.ContainKey(schemaName));
             var sch = openApiDocument?.Definitions[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
             Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"additionalProperties\":false,\"processed\":{}}"));
-            logger.Verify(l => l.LogWarning(filePath, It.IsAny<string>()));
+            logger.Verify(l => l.LogWarning(It.IsAny<string>(), filePath, It.IsAny<string>(), It.IsAny<object[]>()));
         }
 
         [Test]

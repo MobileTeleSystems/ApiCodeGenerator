@@ -9,13 +9,13 @@ namespace ApiCodeGenerator.MSBuild
 {
     internal class ConsoleLogAdapter : ILogger
     {
-        public void LogError(string? sourceFile, string message, params object[] messageArgs)
+        public void LogError(string? code, string? sourceFile, string message, params object[] messageArgs)
             => Console.Error.WriteLine($"{sourceFile}: {string.Format(message, messageArgs)}");
 
-        public void LogMessage(string message, params object[] messageArgs)
+        public void LogMessage(string? code, string? sourceFile, string message, params object[] messageArgs)
             => Console.WriteLine($"INFO: {string.Format(message, messageArgs)}");
 
-        public void LogWarning(string? sourceFile, string message, params object[] messageArgs)
+        public void LogWarning(string? code, string? sourceFile, string message, params object[] messageArgs)
             => Console.WriteLine($"WARNING {sourceFile}: {string.Format(message, messageArgs)}");
     }
 }

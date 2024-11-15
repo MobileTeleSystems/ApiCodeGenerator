@@ -134,7 +134,7 @@ public class AsyncApiContentGeneratorTests
         Assert.That(apiDocument?.Components?.Schemas, Does.ContainKey(schemaName));
         var sch = apiDocument?.Components?.Schemas[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
         Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"processed\":{}}"));
-        logger.Verify(l => l.LogWarning(filePath, It.IsAny<string>()));
+        logger.Verify(l => l.LogWarning(It.IsAny<string>(), filePath, It.IsAny<string>()));
     }
 
     [Test]
@@ -181,17 +181,17 @@ public class AsyncApiContentGeneratorTests
             .And.ContainKey(channelPrefix + "action.{streetlightId}.dim"));
 
         Assert.NotNull(document.Components);
-        Assert.That(document.Components.Messages,
+        Assert.That(document.Components?.Messages,
             Is.Not.Null
             .And.ContainKey("lightMeasured")
             .And.ContainKey("turnOnOff")
             .And.ContainKey("dimLight"));
 
-        Assert.That(document.Components.Parameters,
+        Assert.That(document.Components?.Parameters,
             Is.Not.Null
             .And.ContainKey("streetlightId"));
 
-        Assert.That(document.Components.Schemas,
+        Assert.That(document.Components?.Schemas,
             Is.Not.Null
             .And.ContainKey("lightMeasuredPayload")
             .And.ContainKey("turnOnOffPayload")
@@ -204,32 +204,32 @@ public class AsyncApiContentGeneratorTests
             .And.ContainKey("mtls-connections"));
 
         // Resolve $ref in channel defintion
-        var actualChannel = document.Channels[channelPrefix + "event.{streetlightId}.lighting.measured"];
+        var actualChannel = document.Channels?[channelPrefix + "event.{streetlightId}.lighting.measured"];
         Assert.That(actualChannel,
             Is.Not.Null
             .And.Property("Publish").Not.Null
             .And.Property("Subscribe").Null);
-        Assert.That(actualChannel.Parameters,
+        Assert.That(actualChannel?.Parameters,
             Is.Not.Null
             .And.ContainKey("streetlightId"));
-        Assert.That(actualChannel.Parameters["streetlightId"],
+        Assert.That(actualChannel?.Parameters["streetlightId"],
             Is.Not.Null
             .And.Property("ReferencePath").EqualTo("#/components/parameters/streetlightId")
-            .And.Property("Reference").EqualTo(document.Components.Parameters["streetlightId"]));
-        Assert.That(actualChannel.Publish?.Message,
+            .And.Property("Reference").EqualTo(document.Components?.Parameters["streetlightId"]));
+        Assert.That(actualChannel?.Publish?.Message,
             Is.Not.Null
             .And.Property("ReferencePath").EqualTo("#/components/messages/lightMeasured")
-            .And.Property("Reference").EqualTo(document.Components.Messages["lightMeasured"]));
+            .And.Property("Reference").EqualTo(document.Components?.Messages["lightMeasured"]));
 
         // Resolve $ref in message definition
-        var actualMessage = document.Components.Messages["turnOnOff"];
+        var actualMessage = document.Components?.Messages["turnOnOff"];
         Assert.That(actualMessage, Is.Not.Null);
-        Assert.That(actualMessage.Payload,
+        Assert.That(actualMessage?.Payload,
             Is.Not.Null
-            .And.Property("Reference").EqualTo(document.Components.Schemas["turnOnOffPayload"]));
+            .And.Property("Reference").EqualTo(document.Components?.Schemas["turnOnOffPayload"]));
 
         // Resolve $ref in schema definition
-        Assert.That(document.Components.Schemas["turnOnOffPayload"]?.ActualProperties,
+        Assert.That(document.Components?.Schemas["turnOnOffPayload"]?.ActualProperties,
             Is.Not.Null
             .And.ContainKey("command"));
 
@@ -243,12 +243,12 @@ public class AsyncApiContentGeneratorTests
         // Resolve $ref in servers
         Assert.That(document.Servers["mtls-connections"],
             Is.Not.Null
-            .And.Property("Reference").EqualTo(document.Components.Servers["mtls-connections"]));
+            .And.Property("Reference").EqualTo(document.Components?.Servers["mtls-connections"]));
 
         // Resolve $ref in server variables
         Assert.Multiple(() =>
         {
-            var variables = document.Components.Servers["mtls-connections"].Variables;
+            var variables = document.Components?.Servers["mtls-connections"].Variables;
             Assert.That(variables,
                 Is.Not.Null
              .And.ContainKey("someRefVariable")
@@ -256,11 +256,11 @@ public class AsyncApiContentGeneratorTests
 
             Assert.That(variables!["someRefVariable"],
                 Is.Not.Null
-                .And.Property("Reference").EqualTo(document.Components.ServerVariables["someRefVariable"]));
+                .And.Property("Reference").EqualTo(document.Components?.ServerVariables["someRefVariable"]));
         });
 
         //Read server variables
-        Assert.That(document.Components.ServerVariables["someRefVariable"],
+        Assert.That(document.Components?.ServerVariables["someRefVariable"],
         new PredicateConstraint<ServerVariable>(a =>
             a.Description == "Some ref variable"
             && a.Enum?.FirstOrDefault() == "def"

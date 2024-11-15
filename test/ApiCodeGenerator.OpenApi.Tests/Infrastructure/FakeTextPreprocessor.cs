@@ -26,7 +26,7 @@ namespace ApiCodeGenerator.OpenApi.Tests.Infrastructure
 
         public string Process(string data, string? fileName, ILogger? logger)
         {
-            logger?.LogWarning(fileName, "test");
+            logger?.LogWarning(null, fileName, "test");
             return Process(data, fileName);
         }
     }
