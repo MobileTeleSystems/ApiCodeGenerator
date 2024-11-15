@@ -4,14 +4,13 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using ApiCodeGenerator.Abstraction;
 using ApiCodeGenerator.Core.NswagDocument;
 using ApiCodeGenerator.Core.NswagDocument.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static ApiCodeGenerator.Core.LogCodes;
 
 namespace ApiCodeGenerator.Core
 {
@@ -69,31 +68,31 @@ namespace ApiCodeGenerator.Core
         /// Генерирует код и сохраняет его в указанный файл.
         /// </summary>
         /// <param name="nswagFilePath">Путь к файлу настроек генератора.</param>
-        /// <param name="openApiFilePath">Путь к файлу документа OpenApi.</param>
+        /// <param name="apiDocumentPath">Путь к файлу документа Api.</param>
         /// <param name="outFilePath">Путь к фалу с результатами генерации.</param>
         /// <param name="variables">Перечень пар ключ=значение разделенныз запятой.</param>
         /// <param name="baseNswagFilePath">Файл базовых настроек.</param>
         /// <returns>True если процесс генерации успешно завершен.</returns>
         public async Task<bool> ExecuteAsync(string nswagFilePath,
-                                             string openApiFilePath,
+                                             string apiDocumentPath,
                                              string outFilePath,
                                              string? variables = null,
                                              string? baseNswagFilePath = null)
         {
             if (!_fileProvider.Exists(nswagFilePath))
             {
-                Log?.LogError(null, "File '{0}' not found.", nswagFilePath);
+                Log?.LogError(FileNotFound, nswagFilePath, message: "File '{0}' not found.", messageArgs: nswagFilePath);
                 return false;
             }
 
             // System.Diagnostics.Debugger.Launch();
             var vars = ParseVariables(variables);
-            vars["InputJson"] = openApiFilePath;
+            vars["InputJson"] = apiDocumentPath;
             vars["OutFile"] = outFilePath;
             var roVariables = new ReadOnlyDictionary<string, string>(vars);
 
-            Log?.LogMessage("Values of nswag variables");
-            Log?.LogMessage(string.Join(Environment.NewLine, vars.Select(_ => $"\t[{_.Key}] = {_.Value}")));
+            LogMessage("Values of nswag variables");
+            LogMessage(string.Join(Environment.NewLine, vars.Select(_ => $"\t[{_.Key}] = {_.Value}")));
 
             JObject? baseNswagDocument = LoadBaseNswag(baseNswagFilePath);
             var nswagDocument = _documentFactory.LoadNswagDocument(nswagFilePath, roVariables, baseNswagDocument);
@@ -101,13 +100,13 @@ namespace ApiCodeGenerator.Core
             var generatorSettings = nswagDocument.CodeGenerators.FirstOrDefault();
             if (generatorSettings.Key is null)
             {
-                Log?.LogWarning(nswagFilePath, "Nswag not contains codeGenerator definition. Skip generation.");
+                Log?.LogWarning(NotDefineGenerator, nswagFilePath, "Nswag not contains codeGenerator definition. Skip generation.");
                 return true;
             }
 
             if (!_extensions.CodeGenerators.TryGetValue(generatorSettings.Key, out var contentGeneratorFactory))
             {
-                Log?.LogError(nswagFilePath, $"Unable find generator {generatorSettings.Key}. Check package references.");
+                Log?.LogError(GenNotFound, nswagFilePath, $"Unable find generator {generatorSettings.Key}. Check package references.");
                 return false;
             }
 
@@ -117,31 +116,31 @@ namespace ApiCodeGenerator.Core
             {
                 if (context.DocumentReader is null)
                 {
-                    Log?.LogWarning(nswagFilePath, "Source not set. Skip generation.");
+                    Log?.LogWarning(NotSetInput, nswagFilePath, "Source not set. Skip generation.");
                     return true;
                 }
 
                 try
                 {
-                    Log?.LogMessage($"Use settings: {generatorSettings.Key}");
+                    LogMessage($"Use settings: {generatorSettings.Key}");
                     var contentGenerator = await contentGeneratorFactory.Invoke(context);
 
-                    Log?.LogMessage("Generate content for file '{0}'", outFilePath);
+                    LogMessage("Generate content for file '{0}'", outFilePath);
                     var code = contentGenerator.Generate();
 
                     try
                     {
-                        Log?.LogMessage("Write file '{0}'", outFilePath);
+                        LogMessage("Write file '{0}'", outFilePath);
                         await _fileProvider.WriteAllTextAsync(outFilePath, code);
                     }
                     catch (Exception ex)
                     {
-                        Log?.LogError("Unable write file. Error:", ex.Message);
+                        Log?.LogError(WriteFileErr, outFilePath, "Unable write file. Error: {0}", ex.Message);
                     }
                 }
                 catch (InvalidOperationException ex)
                 {
-                    Log?.LogError(nswagFilePath, ex.Message);
+                    Log?.LogError(GenerationErr, nswagFilePath, ex.Message);
                     return false;
                 }
 
@@ -149,6 +148,9 @@ namespace ApiCodeGenerator.Core
             }
 
             return false;
+
+            void LogMessage(string message, params object[] messageArgs)
+                => Log?.LogMessage(null, nswagFilePath, message, messageArgs);
         }
 
         private async Task<GeneratorContext?> CreateGenerationContext(
@@ -175,7 +177,7 @@ namespace ApiCodeGenerator.Core
 
             if (result is not null && !string.IsNullOrEmpty(result.Error))
             {
-                Log?.LogError(result.FilePath ?? nswagFilePath, result.Error!);
+                Log?.LogError(DocumentOpenErr, result.FilePath ?? nswagFilePath, result.Error!);
                 return null;
             }
 

@@ -51,14 +51,26 @@ namespace ApiCodeGenerator.Core.NswagDocument
                 {
                     var tuple = CreatePreprocessor(processor, method);
                     if (tuple is null)
-                        log?.LogWarning(null, "Method '{0}' skiped, because his signature not like Func<T,string,T>.", method.ToString());
+                    {
+                        log?.LogWarning(
+                            LogCodes.PreprocSkiped,
+                            null,
+                            message: "Method '{0}' skiped, because his signature not like Func<T,string,T>.",
+                            messageArgs: [method.ToString()]);
+                    }
                     else
+                    {
                         yield return tuple.Value;
+                    }
                 }
             }
             else
             {
-                log?.LogWarning(null, "Preprocessor '{0}' skiped, because method 'Process' not found.", name!);
+                log?.LogWarning(
+                    LogCodes.PreprocSkiped,
+                    null,
+                    message: "Preprocessor '{0}' skiped, because method 'Process' not found.",
+                    messageArgs: [name!]);
             }
         }
 
