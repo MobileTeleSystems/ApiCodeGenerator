@@ -92,10 +92,23 @@ namespace ApiCodeGenerator.AsyncApi
             var data = await context.DocumentReader!.ReadToEndAsync();
             data = InvokePreprocessors<string>(data, context.Preprocessors, context.DocumentPath, context.Logger);
 
-            var documentTask = data.StartsWith("{")
-                ? AsyncApiDocument.FromJsonAsync(data)
-                : AsyncApiDocument.FromYamlAsync(data);
-            var document = await documentTask.ConfigureAwait(false);
+            AsyncApiDocument document;
+            try
+            {
+                document = await AsyncApiDocument.FromJsonAsync(data, context.DocumentPath).ConfigureAwait(false);
+            }
+            catch (JsonException ex)
+            {
+                try
+                {
+                    document = await AsyncApiDocument.FromYamlAsync(data, context.DocumentPath).ConfigureAwait(false);
+                }
+                catch (YamlDotNet.Core.YamlException ex2)
+                {
+                    throw new InvalidOperationException(
+                        $"Can not read document as JSON ({ex.Message}) or YAML ({ex2.Message}).");
+                }
+            }
 
             document = InvokePreprocessors<AsyncApiDocument>(document, context.Preprocessors, context.DocumentPath, context.Logger);
             return document;

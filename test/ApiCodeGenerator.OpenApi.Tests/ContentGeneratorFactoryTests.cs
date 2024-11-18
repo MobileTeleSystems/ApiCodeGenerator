@@ -158,7 +158,8 @@ namespace ApiCodeGenerator.OpenApi.Tests
         public async Task LoadOpenApiDocument_FromYaml()
         {
             var context = CreateContext(new());
-            var schemaText = await File.ReadAllTextAsync(TestHelpers.GetSwaggerPath("testSchema.yaml"));
+            context.DocumentPath = TestHelpers.GetSwaggerPath("testSchema.yaml");
+            var schemaText = await File.ReadAllTextAsync(context.DocumentPath);
             context.DocumentReader = new StringReader(schemaText);
 
             var gen = (CSharpClientContentGenerator)await CSharpClientContentGenerator.CreateAsync(context);
@@ -166,6 +167,23 @@ namespace ApiCodeGenerator.OpenApi.Tests
             var openApiDocument = GetDocument(gen.Generator);
 
             Assert.NotNull(openApiDocument);
+            Assert.NotNull(openApiDocument!.DocumentPath);
+        }
+
+        [TestCase("externalRef.json")]
+        public async Task LoadOpenApiDocument_ExternalRef(string documentPath)
+        {
+            var context = CreateContext(new());
+            context.DocumentPath = TestHelpers.GetSwaggerPath(documentPath);
+            var documentContent = await File.ReadAllTextAsync(context.DocumentPath);
+            context.DocumentReader = new StringReader(documentContent);
+
+            var gen = (CSharpClientContentGenerator)await CSharpClientContentGenerator.CreateAsync(context);
+
+            var openApiDocument = GetDocument(gen.Generator);
+
+            Assert.NotNull(openApiDocument);
+            Assert.NotNull(openApiDocument!.Definitions["test"].AllOf.Single().Reference);
         }
 
         private GeneratorContext CreateContext(JObject settingsJson, Core.ExtensionManager.Extensions? extension = null)

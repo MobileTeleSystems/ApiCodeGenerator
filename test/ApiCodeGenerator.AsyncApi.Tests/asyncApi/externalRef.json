@@ -1,0 +1,15 @@
+{
+  "asyncapi": "2.6.0",
+  "info": {
+    "title": "Document with reference to external schema",
+    "version": "1.0"
+  },
+  "channels": {},
+  "components": {
+    "messages": {
+      "lightMeasured": {
+        "$ref": "asyncapi.json#/components/messages/lightMeasured"
+      }
+    }
+  }
+}

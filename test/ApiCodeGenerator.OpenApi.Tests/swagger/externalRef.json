@@ -1,0 +1,19 @@
+{
+  "openapi": "3.0.0",
+  "components": {
+    "schemas": {
+      "test": {
+        "allOf": [
+          {
+            "$ref": "testSchema.json#/definitions/testOperResponse"
+          }
+        ],
+        "properties": {
+          "prop": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
