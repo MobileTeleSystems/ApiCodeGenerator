@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using NSwag;
 using NSwag.CodeGeneration;
 using NSwag.CodeGeneration.CSharp;
+using YamlDotNet.Core;
 
 namespace ApiCodeGenerator.OpenApi
 {
@@ -126,9 +127,24 @@ namespace ApiCodeGenerator.OpenApi
             var documentStr = context.DocumentReader!.ReadToEnd();
             documentStr = InvokePreprocessors<string>(documentStr, context.Preprocessors, context.DocumentPath, context.Logger);
 
-            var openApiDocument = !(documentStr.StartsWith("{") && documentStr.EndsWith("}"))
-                ? await OpenApiYamlDocument.FromYamlAsync(documentStr)
-                : await OpenApiDocument.FromJsonAsync(documentStr);
+            OpenApiDocument openApiDocument;
+
+            try
+            {
+                openApiDocument = await OpenApiDocument.FromJsonAsync(documentStr, context.DocumentPath);
+            }
+            catch (JsonException ex)
+            {
+                try
+                {
+                    openApiDocument = await OpenApiYamlDocument.FromYamlAsync(documentStr, context.DocumentPath);
+                }
+                catch (YamlException ex2)
+                {
+                    throw new InvalidOperationException(
+                        $"Can not read document as JSON ({ex.Message}) or YAML ({ex2.Message}).");
+                }
+            }
 
             openApiDocument = InvokePreprocessors<OpenApiDocument>(openApiDocument, context.Preprocessors, context.DocumentPath, context.Logger);
             return openApiDocument;

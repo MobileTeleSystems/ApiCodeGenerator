@@ -27,7 +27,8 @@
 
   <ItemGroup>
     <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="$(NJsonSchemaVersion)" />
-    <PackageReference Include="YamlDotNet" Version="11.2.1" />
+    <PackageReference Include="NJsonSchema.Yaml" Version="$(NJsonSchemaVersion)" />
+    <PackageReference Include="YamlDotNet" Version="16.2.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -164,6 +164,22 @@ public class AsyncApiContentGeneratorTests
         Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"properties\":{\"processedModel\":{}}}"));
     }
 
+    [TestCase("externalRef.json")]
+    [TestCase("externalRef.yaml")]
+    public async Task LoadApiDocument_WithExternalRef(string documentPath)
+    {
+        var settingsJson = new JObject();
+        var context = CreateContext(settingsJson);
+        context.DocumentReader = await TestHelpers.LoadApiDocumentAsync(documentPath);
+        context.DocumentPath = documentPath;
+
+        var contentGenerator = (FakeContentGenerator)await FakeContentGenerator.CreateAsync(context);
+
+        var document = contentGenerator.Document;
+
+        Assert.NotNull(document.Components?.Messages["lightMeasured"].Reference);
+    }
+
     private static Func<Type, Newtonsoft.Json.JsonSerializer?, IReadOnlyDictionary<string, string>?, object?> GetSettingsFactory(string json)
         => (t, s, v) => (s ?? new()).Deserialize(new StringReader(json), t);
 
