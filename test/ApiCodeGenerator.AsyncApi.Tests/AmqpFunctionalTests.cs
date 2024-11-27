@@ -161,7 +161,7 @@ public class AmqpFunctionalTests
         channelProperty.Value["bindings"] = JObject.FromObject(channelBinding); // add binding declaration
         json["channels"] = new JObject { channelProperty }; // for test use only last channel
 
-        var context = new GeneratorContext((t, s, v) => settings, new Core.ExtensionManager.Extensions(), new Dictionary<string, string>())
+        var context = new GeneratorContext((_, _, _) => settings, new Core.ExtensionManager.Extensions(), new Dictionary<string, string>())
         {
             DocumentReader = new StringReader(json.ToString()),
         };

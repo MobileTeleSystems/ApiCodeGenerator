@@ -15,7 +15,7 @@ public class AsyncApiContentGeneratorTests
         var extensions = new Core.ExtensionManager.Extensions();
 
         var context = new GeneratorContext(
-            settingsFactory: (t, s, v) => null,
+            settingsFactory: (_, _, _) => null,
             extensions,
             variables: new Dictionary<string, string>())
         {
@@ -181,7 +181,7 @@ public class AsyncApiContentGeneratorTests
     }
 
     private static Func<Type, Newtonsoft.Json.JsonSerializer?, IReadOnlyDictionary<string, string>?, object?> GetSettingsFactory(string json)
-        => (t, s, v) => (s ?? new()).Deserialize(new StringReader(json), t);
+        => (t, s, _) => (s ?? new()).Deserialize(new StringReader(json), t);
 
     private void ValidateDocument(AsyncApiDocument document)
     {
