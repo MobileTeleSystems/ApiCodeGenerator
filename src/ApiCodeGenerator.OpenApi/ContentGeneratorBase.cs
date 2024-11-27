@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -10,6 +11,7 @@ using Newtonsoft.Json;
 using NSwag;
 using NSwag.CodeGeneration;
 using NSwag.CodeGeneration.CSharp;
+using YamlDotNet.Core;
 
 namespace ApiCodeGenerator.OpenApi
 {
@@ -77,13 +79,19 @@ namespace ApiCodeGenerator.OpenApi
 
         protected static T InvokePreprocessors<T>(T data,
             Preprocessors? preprocessors,
-            string? filePath)
+            string? filePath,
+            ILogger? logger)
         {
             if (preprocessors?.TryGetValue(typeof(T), out var openApiDocumentPreprocessors) == true)
             {
-                foreach (var processor in openApiDocumentPreprocessors.OfType<Func<T, string?, T>>())
+                foreach (var processor in openApiDocumentPreprocessors)
                 {
-                    data = processor.Invoke(data, filePath);
+                    data = processor switch
+                    {
+                        Func<T, string?, T> p => p.Invoke(data, filePath),
+                        Func<T, string?, ILogger?, T> p => p.Invoke(data, filePath, logger),
+                        _ => data,
+                    };
                 }
             }
 
@@ -117,10 +125,28 @@ namespace ApiCodeGenerator.OpenApi
         protected static async Task<OpenApiDocument> ReadAndProcessOpenApiDocument(GeneratorContext context)
         {
             var documentStr = context.DocumentReader!.ReadToEnd();
-            documentStr = InvokePreprocessors<string>(documentStr, context.Preprocessors, context.DocumentPath);
+            documentStr = InvokePreprocessors<string>(documentStr, context.Preprocessors, context.DocumentPath, context.Logger);
 
-            var openApiDocument = await OpenApiDocument.FromJsonAsync(documentStr);
-            openApiDocument = InvokePreprocessors<OpenApiDocument>(openApiDocument, context.Preprocessors, context.DocumentPath);
+            OpenApiDocument openApiDocument;
+
+            try
+            {
+                openApiDocument = await OpenApiDocument.FromJsonAsync(documentStr, context.DocumentPath);
+            }
+            catch (JsonException ex)
+            {
+                try
+                {
+                    openApiDocument = await OpenApiYamlDocument.FromYamlAsync(documentStr, context.DocumentPath);
+                }
+                catch (YamlException ex2)
+                {
+                    throw new InvalidOperationException(
+                        $"Can not read document as JSON ({ex.Message}) or YAML ({ex2.Message}).");
+                }
+            }
+
+            openApiDocument = InvokePreprocessors<OpenApiDocument>(openApiDocument, context.Preprocessors, context.DocumentPath, context.Logger);
             return openApiDocument;
         }
     }

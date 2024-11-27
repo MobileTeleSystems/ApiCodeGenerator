@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ApiCodeGenerator.Abstraction
 {
@@ -20,15 +19,17 @@ namespace ApiCodeGenerator.Abstraction
             Variables = variables;
         }
 
-        public IReadOnlyDictionary<string, string> Variables { get; set; }
+        public IReadOnlyDictionary<string, string> Variables { get; }
 
-        public IExtensions Extensions { get; set; }
+        public IExtensions Extensions { get; }
 
-        public TextReader? DocumentReader { get; set; }
+        public TextReader? DocumentReader { get; internal set; }
 
-        public Preprocessors? Preprocessors { get; set; }
+        public Preprocessors? Preprocessors { get; internal set; }
 
         public string? DocumentPath { get; internal set; }
+
+        public ILogger? Logger { get; internal set; }
 
         public T? GetSettings<T>(JsonSerializer? jsonSerializer, IReadOnlyDictionary<string, string>? additionalVariables)
             where T : class

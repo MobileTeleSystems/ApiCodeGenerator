@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace ApiCodeGenerator.OpenApi.Tests.Infrastructure
+namespace ApiCodeGenerator.AsyncApi.Tests.Infrastructure
 {
     internal class FakeTextPreprocessor
     {
@@ -21,7 +21,18 @@ namespace ApiCodeGenerator.OpenApi.Tests.Infrastructure
         public string Process(string data, string? fileName)
         {
             Invocactions.Add(new(Settings, true, [data, fileName]));
-            return "{\"definitions\":{\"schemaName\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"processed\":{}}}}";
+            return """
+            {
+                "components":{
+                    "schemas":{
+                        "schemaName":{
+                            "$schema":"http://json-schema.org/draft-04/schema#",
+                            "processed":{}
+                        }
+                    }
+                }
+            }
+            """;
         }
 
         public string Process(string data, string? fileName, ILogger? logger)

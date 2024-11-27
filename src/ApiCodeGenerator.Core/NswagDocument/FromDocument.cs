@@ -13,8 +13,5 @@ namespace ApiCodeGenerator.Core.NswagDocument
 
         [JsonProperty("url", NullValueHandling = NullValueHandling.Ignore)]
         public string? Url { get; set; }
-
-        [JsonProperty("preprocessors", NullValueHandling = NullValueHandling.Ignore)]
-        public ICollection<string>? Preprocessors { get; set; }
     }
 }

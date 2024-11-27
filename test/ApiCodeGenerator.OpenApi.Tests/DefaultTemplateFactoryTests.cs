@@ -51,7 +51,7 @@ public class DefaultTemplateFactoryTests
 
         string? ITemplateProvider.GetFullName(string name, string language)
         {
-            return name == "Class" || name == "Class!"
+            return name == "Class"
                 ? $"{_providerKey}.{name}"
                 : null;
         }

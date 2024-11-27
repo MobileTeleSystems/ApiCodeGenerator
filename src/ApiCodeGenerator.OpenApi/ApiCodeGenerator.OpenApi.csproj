@@ -16,6 +16,7 @@
   <ItemGroup>
     <PackageReference Include="NSwag.CodeGeneration.CSharp" Version="$(NswagVersion)" />
     <PackageReference Include="NSwag.Core.Yaml" Version="$(NswagVersion)" />
+    <PackageReference Include="YamlDotNet" Version="16.2.0" />
   </ItemGroup>
 
   <ItemGroup>

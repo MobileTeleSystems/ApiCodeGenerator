@@ -6,7 +6,7 @@
 1. Пересоберите проект
 
 # Формат файла nswag
-> Для использования подсказок при редактировании файла можно подключить в  ваш редактор файл `nswag-shema.json` из этого репозитория.
+> Для использования подсказок при редактировании файла укажите схему https://raw.githubusercontent.com/MobileTeleSystems/ApiCodeGenerator/refs/heads/dev/schemas/nswag.json.
 
 Формат nswag - это файлы в которых хранит настройки программа [NSwagStudio](https://github.com/RicoSuter/NSwag/wiki/NSwagStudio), ее можно использовать для настройки стандартных генераторов Nswag.
 Файл имеет следующий вид:

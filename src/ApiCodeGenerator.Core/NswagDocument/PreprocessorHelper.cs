@@ -62,7 +62,11 @@ namespace ApiCodeGenerator.Core.NswagDocument
                     var tuple = CreatePreprocessor(processor, method);
                     if (tuple is null)
                     {
-                        log?.LogWarning(null, "Method '{0}' skiped, because his signature not like Func<T,string,T>.", method.ToString());
+                        log?.LogWarning(
+                            LogCodes.PreprocSkiped,
+                            null,
+                            message: "Method '{0}' skiped, because his signature not like Func<T,string,T>.",
+                            messageArgs: [method.ToString()]);
                     }
                     else
                     {
@@ -72,7 +76,11 @@ namespace ApiCodeGenerator.Core.NswagDocument
             }
             else
             {
-                log?.LogWarning(null, "Preprocessor '{0}' skiped, because method 'Process' not found.", name!);
+                log?.LogWarning(
+                    LogCodes.PreprocSkiped,
+                    null,
+                    message: "Preprocessor '{0}' skiped, because method 'Process' not found.",
+                    messageArgs: [name!]);
             }
         }
 
@@ -87,6 +95,16 @@ namespace ApiCodeGenerator.Core.NswagDocument
                 && param[1].ParameterType == typeof(string))
             {
                 var delegateType = typeof(Func<,,>).MakeGenericType(retType, typeof(string), retType);
+                return (retType, method.CreateDelegate(delegateType, processor));
+            }
+
+            if (retType != typeof(void)
+                && param.Length == 3
+                && param[0].ParameterType == retType
+                && param[1].ParameterType == typeof(string)
+                && param[2].ParameterType == typeof(ILogger))
+            {
+                var delegateType = typeof(Func<,,,>).MakeGenericType(retType, typeof(string), typeof(ILogger), retType);
                 return (retType, method.CreateDelegate(delegateType, processor));
             }
 

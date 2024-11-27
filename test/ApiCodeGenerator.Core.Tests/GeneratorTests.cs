@@ -47,12 +47,12 @@ namespace ApiCodeGenerator.Core.Tests
             // Act
             var res = await task.ExecuteAsync(
                 nswagFilePath: nswagFilePath,
-                openApiFilePath: NOT_SET,
+                apiDocumentPath: NOT_SET,
                 outFilePath: NOT_SET);
 
             // Assert
             Assert.False(res);
-            loggerMock.Verify(l => l.LogError(null, "File '{0}' not found.", nswagFilePath));
+            loggerMock.Verify(l => l.LogError(LogCodes.FileNotFound, It.IsAny<string>(), "File '{0}' not found.", nswagFilePath));
         }
 
         // разбор переменных
@@ -73,13 +73,13 @@ namespace ApiCodeGenerator.Core.Tests
             //Act
             _ = await task.ExecuteAsync(
                 nswagFilePath: "exists.nswag",
-                openApiFilePath: NOT_SET,
+                apiDocumentPath: NOT_SET,
                 outFilePath: OutFilePath,
                 variables: "TestVar=TestValue,TestVar2 = TestValue2, TestVar_3 =TestValue3");
 
             //Assert
             Assert.NotNull(variables);
-            loggerMock.Verify(be => be.LogError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.Never());
+            loggerMock.Verify(be => be.LogError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.Never());
             Assert.That(variables,
                 Does.ContainKey("TestVar").WithValue("TestValue")
                 .And.ContainKey("TestVar2").WithValue("TestValue2")
@@ -108,12 +108,12 @@ namespace ApiCodeGenerator.Core.Tests
             //Act
             var result = await task.ExecuteAsync(
                 nswagFilePath: nswagFileName,
-                openApiFilePath: NOT_SET,
+                apiDocumentPath: NOT_SET,
                 outFilePath: NOT_SET);
 
             //Assert
             Assert.True(result);
-            loggerMock.Verify(l => l.LogWarning(nswagFileName, expectedError, It.IsAny<object[]>()), Times.Once());
+            loggerMock.Verify(l => l.LogWarning(It.IsAny<string>(), nswagFileName, expectedError, It.IsAny<object[]>()), Times.Once());
         }
 
         // обработка ошибки загрузки документа Api
@@ -137,12 +137,12 @@ namespace ApiCodeGenerator.Core.Tests
             //Act
             var result = await task.ExecuteAsync(
                 nswagFilePath: @"exists.nswag",
-                openApiFilePath: OpenApiFilePath,
+                apiDocumentPath: OpenApiFilePath,
                 outFilePath: NOT_SET);
 
             //Assert
             Assert.False(result);
-            loggerMock.Verify(l => l.LogError(It.IsAny<string>(), expectedError, new string[0]), Times.Once());
+            loggerMock.Verify(l => l.LogError(It.IsAny<string>(), It.IsAny<string>(), expectedError, new string[0]), Times.Once());
         }
 
         // проверка загрузки генератора содержимого и его последующего вызова.
@@ -165,7 +165,7 @@ namespace ApiCodeGenerator.Core.Tests
             // Act
             var result = await task.ExecuteAsync(
                 nswagFilePath: @"csharp.nswag",
-                openApiFilePath: NOT_SET,
+                apiDocumentPath: NOT_SET,
                 outFilePath: OutFilePath);
 
             // Assert
@@ -196,7 +196,7 @@ namespace ApiCodeGenerator.Core.Tests
             // Act
             var result = await task.ExecuteAsync(
                 nswagFilePath: @"csharp.nswag",
-                openApiFilePath: NOT_SET,
+                apiDocumentPath: NOT_SET,
                 outFilePath: OutFilePath);
 
             // Assert
@@ -224,11 +224,11 @@ namespace ApiCodeGenerator.Core.Tests
             // Act
             var result = await task.ExecuteAsync(
                 nswagFilePath: @"csharp.nswag",
-                openApiFilePath: NOT_SET,
+                apiDocumentPath: NOT_SET,
                 outFilePath: OutFilePath);
 
             // Assert
-            loggerMock.Verify(be => be.LogError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.Never);
+            loggerMock.Verify(be => be.LogError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.Never);
             Assert.True(result);
             var expectedCode = FakeCodeGenerator.FileContent;
             _fileProviderMock.Verify(fp => fp.WriteAllTextAsync(It.Is<string>(v => v == OutFilePath), expectedCode), Times.Once);
@@ -260,12 +260,12 @@ namespace ApiCodeGenerator.Core.Tests
             // Act
             var result = await task.ExecuteAsync(
                 nswagFilePath: @"csharp.nswag",
-                openApiFilePath: NOT_SET,
+                apiDocumentPath: NOT_SET,
                 outFilePath: OutFilePath,
                 variables: $"var={expectedClassName}");
 
             // Assert
-            loggerMock.Verify(be => be.LogError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.Never);
+            loggerMock.Verify(be => be.LogError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.Never);
             Assert.True(result);
             Assert.NotNull(codeGen);
             Assert.IsInstanceOf<FakeCodeGenerator>(codeGen);
@@ -306,11 +306,11 @@ namespace ApiCodeGenerator.Core.Tests
             // Act
             var result = await task.ExecuteAsync(
                 nswagFilePath: @"csharp.nswag",
-                openApiFilePath: NOT_SET,
+                apiDocumentPath: NOT_SET,
                 outFilePath: OutFilePath);
 
             // Assert
-            loggerMock.Verify(be => be.LogError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.Never);
+            loggerMock.Verify(be => be.LogError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.Never);
             Assert.True(result);
             Assert.NotNull(codeGen);
             Assert.IsInstanceOf<FakeCodeGenerator>(codeGen);

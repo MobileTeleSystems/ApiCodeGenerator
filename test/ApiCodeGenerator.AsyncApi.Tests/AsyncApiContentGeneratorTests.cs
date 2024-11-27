@@ -1,4 +1,8 @@
+using System.Collections.ObjectModel;
 using ApiCodeGenerator.AsyncApi.DOM;
+using Moq;
+using Newtonsoft.Json.Linq;
+using NUnit.Framework.Constraints;
 
 namespace ApiCodeGenerator.AsyncApi.Tests;
 
@@ -82,6 +86,100 @@ public class AsyncApiContentGeneratorTests
         Assert.IsInstanceOf<ParameterNameGeneratorWithReplace>(settings.ParameterNameGenerator);
     }
 
+    [Test]
+    public async Task LoadApiDocument_WithTextPreprocess()
+    {
+        const string schemaName = nameof(schemaName);
+        var settingsJson = new JObject();
+
+        Func<string, string?, string> dlgt = new FakeTextPreprocessor("{}").Process;
+
+        var context = CreateContext(settingsJson);
+
+        context.Preprocessors = new Preprocessors(
+            new Dictionary<Type, Delegate[]> { [typeof(string)] = [dlgt] });
+
+        var gen = (FakeContentGenerator)await FakeContentGenerator.CreateAsync(context);
+
+        var apiDocument = gen.Document;
+
+        Assert.NotNull(apiDocument);
+        Assert.That(apiDocument?.Components?.Schemas, Does.ContainKey(schemaName));
+        var sch = apiDocument?.Components?.Schemas[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
+        Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"processed\":{}}"));
+    }
+
+    [Test]
+    public async Task LoadApiDocument_WithTextPreprocess_Log()
+    {
+        const string schemaName = nameof(schemaName);
+        const string filePath = "cd4bed67-1cc0-44a2-8dd1-30a0bd0c1dee";
+        var settingsJson = new JObject();
+
+        Func<string, string?, ILogger?, string> dlgt = new FakeTextPreprocessor("{}").Process;
+
+        var logger = new Mock<ILogger>();
+        var context = CreateContext(settingsJson);
+        context.Logger = logger.Object;
+        context.DocumentPath = filePath;
+
+        context.Preprocessors = new Preprocessors(
+            new Dictionary<Type, Delegate[]> { [typeof(string)] = [dlgt] });
+
+        var gen = (FakeContentGenerator)await FakeContentGenerator.CreateAsync(context);
+
+        var apiDocument = gen.Document;
+
+        Assert.NotNull(apiDocument);
+        Assert.That(apiDocument?.Components?.Schemas, Does.ContainKey(schemaName));
+        var sch = apiDocument?.Components?.Schemas[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
+        Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"processed\":{}}"));
+        logger.Verify(l => l.LogWarning(It.IsAny<string>(), filePath, It.IsAny<string>()));
+    }
+
+    [Test]
+    public async Task LoadApiDocument_WithModelPreprocess()
+    {
+        const string schemaName = nameof(schemaName);
+        var settingsJson = new JObject();
+
+        Func<AsyncApiDocument, string?, AsyncApiDocument> dlgt = new FakeModelPreprocessor("{}").Process;
+
+        var context = CreateContext(settingsJson);
+        context.DocumentReader = new StringReader("{\"components\":{\"schemas\":{\"" + schemaName + "\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\"}}}}");
+
+        context.Preprocessors = new Preprocessors(
+            new Dictionary<Type, Delegate[]>
+            {
+                [typeof(AsyncApiDocument)] = [dlgt],
+            });
+
+        var gen = (FakeContentGenerator)await FakeContentGenerator.CreateAsync(context);
+
+        var apiDocument = gen.Document;
+
+        Assert.NotNull(apiDocument);
+        Assert.That(apiDocument?.Components?.Schemas, Does.ContainKey(schemaName));
+        var sch = apiDocument?.Components?.Schemas[schemaName].ToJson(Newtonsoft.Json.Formatting.None);
+        Assert.That(sch, Is.EqualTo("{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"properties\":{\"processedModel\":{}}}"));
+    }
+
+    [TestCase("externalRef.json")]
+    [TestCase("externalRef.yaml")]
+    public async Task LoadApiDocument_WithExternalRef(string documentPath)
+    {
+        var settingsJson = new JObject();
+        var context = CreateContext(settingsJson);
+        context.DocumentReader = await TestHelpers.LoadApiDocumentAsync(documentPath);
+        context.DocumentPath = documentPath;
+
+        var contentGenerator = (FakeContentGenerator)await FakeContentGenerator.CreateAsync(context);
+
+        var document = contentGenerator.Document;
+
+        Assert.NotNull(document.Components?.Messages["lightMeasured"].Reference);
+    }
+
     private static Func<Type, Newtonsoft.Json.JsonSerializer?, IReadOnlyDictionary<string, string>?, object?> GetSettingsFactory(string json)
         => (t, s, v) => (s ?? new()).Deserialize(new StringReader(json), t);
 
@@ -99,17 +197,17 @@ public class AsyncApiContentGeneratorTests
             .And.ContainKey(channelPrefix + "action.{streetlightId}.dim"));
 
         Assert.NotNull(document.Components);
-        Assert.That(document.Components.Messages,
+        Assert.That(document.Components?.Messages,
             Is.Not.Null
             .And.ContainKey("lightMeasured")
             .And.ContainKey("turnOnOff")
             .And.ContainKey("dimLight"));
 
-        Assert.That(document.Components.Parameters,
+        Assert.That(document.Components?.Parameters,
             Is.Not.Null
             .And.ContainKey("streetlightId"));
 
-        Assert.That(document.Components.Schemas,
+        Assert.That(document.Components?.Schemas,
             Is.Not.Null
             .And.ContainKey("lightMeasuredPayload")
             .And.ContainKey("turnOnOffPayload")
@@ -122,33 +220,79 @@ public class AsyncApiContentGeneratorTests
             .And.ContainKey("mtls-connections"));
 
         // Resolve $ref in channel defintion
-        var actualChannel = document.Channels[channelPrefix + "event.{streetlightId}.lighting.measured"];
+        var actualChannel = document.Channels?[channelPrefix + "event.{streetlightId}.lighting.measured"];
         Assert.That(actualChannel,
             Is.Not.Null
             .And.Property("Publish").Not.Null
             .And.Property("Subscribe").Null);
-        Assert.That(actualChannel.Parameters,
+        Assert.That(actualChannel?.Parameters,
             Is.Not.Null
             .And.ContainKey("streetlightId"));
-        Assert.That(actualChannel.Parameters["streetlightId"],
+        Assert.That(actualChannel?.Parameters["streetlightId"],
             Is.Not.Null
             .And.Property("ReferencePath").EqualTo("#/components/parameters/streetlightId")
-            .And.Property("Reference").EqualTo(document.Components.Parameters["streetlightId"]));
-        Assert.That(actualChannel.Publish?.Message,
+            .And.Property("Reference").EqualTo(document.Components?.Parameters["streetlightId"]));
+        Assert.That(actualChannel?.Publish?.Message,
             Is.Not.Null
             .And.Property("ReferencePath").EqualTo("#/components/messages/lightMeasured")
-            .And.Property("Reference").EqualTo(document.Components.Messages["lightMeasured"]));
+            .And.Property("Reference").EqualTo(document.Components?.Messages["lightMeasured"]));
 
         // Resolve $ref in message definition
-        var actualMessage = document.Components.Messages["turnOnOff"];
+        var actualMessage = document.Components?.Messages["turnOnOff"];
         Assert.That(actualMessage, Is.Not.Null);
-        Assert.That(actualMessage.Payload,
+        Assert.That(actualMessage?.Payload,
             Is.Not.Null
-            .And.Property("Reference").EqualTo(document.Components.Schemas["turnOnOffPayload"]));
+            .And.Property("Reference").EqualTo(document.Components?.Schemas["turnOnOffPayload"]));
 
         // Resolve $ref in schema definition
-        Assert.That(document.Components.Schemas["turnOnOffPayload"]?.ActualProperties,
+        Assert.That(document.Components?.Schemas["turnOnOffPayload"]?.ActualProperties,
             Is.Not.Null
             .And.ContainKey("command"));
+
+        //Read server object
+        Assert.That(document.Servers["scram-connections"],
+            Is.Not.Null
+            .And.Property("Url").EqualTo("test.mykafkacluster.org:18092")
+            .And.Property("Protocol").EqualTo("kafka-secure")
+            .And.Property("Description").EqualTo("Test broker secured with scramSha256"));
+
+        // Resolve $ref in servers
+        Assert.That(document.Servers["mtls-connections"],
+            Is.Not.Null
+            .And.Property("Reference").EqualTo(document.Components?.Servers["mtls-connections"]));
+
+        // Resolve $ref in server variables
+        Assert.Multiple(() =>
+        {
+            var variables = document.Components?.Servers["mtls-connections"].Variables;
+            Assert.That(variables,
+                Is.Not.Null
+             .And.ContainKey("someRefVariable")
+             .And.ContainKey("someVariable"));
+
+            Assert.That(variables!["someRefVariable"],
+                Is.Not.Null
+                .And.Property("Reference").EqualTo(document.Components?.ServerVariables["someRefVariable"]));
+        });
+
+        //Read server variables
+        Assert.That(document.Components?.ServerVariables["someRefVariable"],
+        new PredicateConstraint<ServerVariable>(a =>
+            a.Description == "Some ref variable"
+            && a.Enum?.FirstOrDefault() == "def"
+            && a.Default == "def"
+            && a.Examples?.FirstOrDefault() == "exam"));
+    }
+
+    private GeneratorContext CreateContext(JObject settingsJson, Core.ExtensionManager.Extensions? extension = null)
+    {
+        extension ??= new();
+        return new GeneratorContext(
+            (t, s, _) => settingsJson.ToObject(t, s ?? new()),
+            extension,
+            new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()))
+        {
+            DocumentReader = new StringReader("{}"),
+        };
     }
 }
