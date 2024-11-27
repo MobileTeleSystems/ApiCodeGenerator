@@ -66,11 +66,15 @@ namespace ApiCodeGenerator.Core.ExtensionManager
             if (propInfo != null)
             {
                 if (!typeof(IDictionary<string, T>).IsAssignableFrom(propInfo.PropertyType))
+                {
                     throw new InvalidOperationException($"Property {propName} in assembly {type.Assembly.FullName} must return type IDictionary<string, {typeof(T)}>");
+                }
 
                 var value = (IDictionary<string, T>)propInfo.GetValue(type, null);
                 foreach (var kv in value)
+                {
                     dict.Add(kv.Key, kv.Value);
+                }
             }
         }
 
@@ -80,7 +84,9 @@ namespace ApiCodeGenerator.Core.ExtensionManager
             if (propInfo != null)
             {
                 if (!typeof(IDictionary<string, T>).IsAssignableFrom(propInfo.PropertyType))
+                {
                     throw new InvalidOperationException($"Property {propName} in assembly {type.Assembly.FullName} must return type IDictionary<string, {typeof(T)}>");
+                }
 
                 var value = (IDictionary<string, T>)propInfo.GetValue(type, null);
                 if (value.Any())

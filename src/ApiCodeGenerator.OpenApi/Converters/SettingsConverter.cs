@@ -104,13 +104,19 @@ namespace ApiCodeGenerator.Core.Converters
                     {
                         var pos = Array.IndexOf(unwrapProp, p.Name);
                         if (pos > -1)
+                        {
                             forUnwrap[pos] = p;
+                        }
                         else
+                        {
                             props[p.Name] = (p, targetObject);
+                        }
                     }
 
                     foreach (var item in forUnwrap.Where(pi => pi != null))
+                    {
                         FillProperties(item.GetValue(targetObject), unwrapProp);
+                    }
                 }
             }
         }

@@ -80,7 +80,6 @@
     <Rule Id="SA1309" Action="None" />
     <Rule Id="SA1310" Action="None" />
     <Rule Id="SA1311" Action="None" />
-    <Rule Id="SA1503" Action="None" />
     <Rule Id="SA1600" Action="None" />
     <Rule Id="SA1623" Action="None" />
     <Rule Id="SA1633" Action="Hidden" />

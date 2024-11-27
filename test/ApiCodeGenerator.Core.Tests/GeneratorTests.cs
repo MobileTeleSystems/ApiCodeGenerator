@@ -172,7 +172,7 @@ namespace ApiCodeGenerator.Core.Tests
             Assert.True(result);
             Assert.NotNull(generatorMock.Object.Context);
             Assert.NotNull(generatorMock.Object.Context.DocumentReader);
-            Assert.NotNull(generatorMock.Object.Context.GetSettings<JObject>());
+            Assert.NotNull(generatorMock.Object.Context.GetSettings<JObject>(null, null));
             generatorMock.Verify(g => g.Generate(), Times.Once);
             _fileProviderMock.Verify(fp => fp.WriteAllTextAsync(It.Is<string>(v => v == OutFilePath), It.IsAny<string>()), Times.Once);
         }

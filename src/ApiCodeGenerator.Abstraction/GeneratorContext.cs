@@ -31,7 +31,7 @@ namespace ApiCodeGenerator.Abstraction
 
         public ILogger? Logger { get; internal set; }
 
-        public T? GetSettings<T>(JsonSerializer? jsonSerializer = null, IReadOnlyDictionary<string, string>? additionalVariables = null)
+        public T? GetSettings<T>(JsonSerializer? jsonSerializer, IReadOnlyDictionary<string, string>? additionalVariables)
             where T : class
             => (T?)_settingsFactory(typeof(T), jsonSerializer, additionalVariables);
     }

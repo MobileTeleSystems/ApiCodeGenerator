@@ -49,14 +49,14 @@ public class DefaultTemplateFactoryTests
             _templateText = templateText;
         }
 
-        public string? GetFullName(string name, string language)
+        string? ITemplateProvider.GetFullName(string name, string language)
         {
             return name == "Class"
                 ? $"{_providerKey}.{name}"
                 : null;
         }
 
-        public string? GetTemplateText(string name, string language)
+        string? ITemplateProvider.GetTemplateText(string name, string language)
         {
             if (name.StartsWith(_providerKey))
             {
