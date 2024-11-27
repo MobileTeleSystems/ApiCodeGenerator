@@ -47,7 +47,7 @@ internal static partial class TestHelpers
         var docReader = File.OpenText(GetAsyncApiPath(schemaFile));
 
         return new GeneratorContext(
-            (t, s, v) => s!.Deserialize(jReader, t),
+            (t, s, _) => s!.Deserialize(jReader, t),
             extensions ?? new(AcgExtension.CodeGenerators, GetOperationGenerators()),
             new Dictionary<string, string>())
         {
@@ -263,7 +263,7 @@ internal static partial class TestHelpers
 
     private static Task<IContentGenerator> CreateGenerator(TextReader document, CSharpClientGeneratorSettings settings)
     {
-        var context = new GeneratorContext((t, s, v) => settings, new Core.ExtensionManager.Extensions(), new Dictionary<string, string>())
+        var context = new GeneratorContext((_, _, _) => settings, new Core.ExtensionManager.Extensions(), new Dictionary<string, string>())
         {
             DocumentReader = document,
         };

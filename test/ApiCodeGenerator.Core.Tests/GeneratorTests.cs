@@ -127,7 +127,7 @@ namespace ApiCodeGenerator.Core.Tests
             var expectedError = $"Unable load OpenApi document from '{OpenApiFilePath}'";
             var documentFactoryMock = new Mock<INswagDocumentFactory>();
             documentFactoryMock.Setup(df => df.LoadNswagDocument(It.IsAny<string>(), It.IsAny<VariablesDict>(), null))
-                .Returns<string, VariablesDict, JObject?>((p, v, b) => LoadNswag(nswag, v));
+                .Returns<string, VariablesDict, JObject?>((_, v, _) => LoadNswag(nswag, v));
 
             var extensions = new ExtensionManager.Extensions(
                 FakeGenerator());
