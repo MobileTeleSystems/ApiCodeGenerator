@@ -106,6 +106,7 @@ namespace ApiCodeGenerator.Core
                     }
                 }
 
+                data.Schema = data.Schema.Replace("#/definitions/", $"#/components/schemas/{data.Name}/definitions/");
                 var content = $"{{\"openapi\":\"3.0.0\",\"components\":{{\"schemas\":{{\"{data.Name}\":{data.Schema}}}}}}}";
                 return FromContent(content, null);
             }
