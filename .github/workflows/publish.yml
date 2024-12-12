@@ -10,17 +10,17 @@ on:
         default: true
         type: boolean
         required: true
+        description: Set as pre-release
       push:
         default: false
         type: boolean
         description: Push to nuget.org
 
   push:
-    branches: [ "main" ]
+    branches: ["master"]
 
 jobs:
   publish:
-
     runs-on: ubuntu-latest
     env:
       PackageOutputDir: ".packages"
@@ -28,46 +28,45 @@ jobs:
       PushPackage: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event.inputs.push }}
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-          fetch-depth: 0 
-          
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
-        
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v3.0.0
-      with:
-        versionSpec: '6.0.5'
-        
-    - name: Determine Version
-      run: |
-        ${GITVERSION_PATH}/dotnet-gitversion /output buildserver /output json
-        
-    - name: Pack
-      run: |
-        dotnet pack --nologo -o ${PackageOutputDir}  \
-         -p:PackageVersion=${GitVersion_SemVer} \
-         -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} \
-         -p:FileVersion=${GitVersion_MajorMinorPatch} \
-         -p:AssemblyVersion=${GitVersion_AssemblySemVer} \
-         -p:FileVersion=${GitVersion_MajorMinorPatch} \
-         -p:Configuration=Release
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Nuget Push
-      if: env.PushPackage == 'true'
-      working-directory: ${{ env.PackageOutputDir }}
-      run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
 
-    - name: Create Release
-      uses: ncipollo/release-action@v1
-      with:
-        name: v${{ env.GitVersion_SemVer }}
-        tag: v${{ env.GitVersion_SemVer }}
-        artifacts: ${{ env.PackageOutputDir }}/*.nupkg
-        generateReleaseNotes: true
-        commit: ${{ env.GitVersion_Sha}}
-        prerelease: ${{ env.Prerelease }}
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.0.0
+        with:
+          versionSpec: "6.0.5"
 
+      - name: Determine Version
+        run: |
+          ${GITVERSION_PATH}/dotnet-gitversion /output buildserver /output json
+
+      - name: Pack
+        run: |
+          dotnet pack --nologo -o ${PackageOutputDir}  \
+           -p:PackageVersion=${GitVersion_SemVer} \
+           -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} \
+           -p:FileVersion=${GitVersion_MajorMinorPatch} \
+           -p:AssemblyVersion=${GitVersion_AssemblySemVer} \
+           -p:FileVersion=${GitVersion_MajorMinorPatch} \
+           -p:Configuration=Release
+
+      - name: Nuget Push
+        if: env.PushPackage == 'true'
+        working-directory: ${{ env.PackageOutputDir }}
+        run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          name: v${{ env.GitVersion_SemVer }}
+          tag: v${{ env.GitVersion_SemVer }}
+          artifacts: ${{ env.PackageOutputDir }}/*.nupkg
+          generateReleaseNotes: true
+          commit: ${{ env.GitVersion_Sha}}
+          prerelease: ${{ env.Prerelease }}
