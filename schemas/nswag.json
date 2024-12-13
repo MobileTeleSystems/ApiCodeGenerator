@@ -1,108 +1,120 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "properties": {
-    "runtime": {
-      "type": "string",
-      "enum": [
-        "Default",
-        "WinX64",
-        "WinX86",
-        "NetCore10",
-        "NetCore11",
-        "NetCore20",
-        "NetCore21",
-        "NetCore22",
-        "NetCore30",
-        "Debug"
-      ]
+  "allOf": [
+    {
+      "$ref": "#/definitions/nswagDocument"
     },
-    "defaultVariables": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "documentGenerator": {
+    {
+      "properties": {
+        "codeGenerators": {
+          "$ref": "#/definitions/codeGenerators"
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "nswagDocument": {
       "type": "object",
       "properties": {
-        "fromDocument": {
+        "runtime": {
+          "type": "string",
+          "enum": [
+            "Default",
+            "WinX64",
+            "WinX86",
+            "NetCore10",
+            "NetCore11",
+            "NetCore20",
+            "NetCore21",
+            "NetCore22",
+            "NetCore30",
+            "Debug"
+          ]
+        },
+        "defaultVariables": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "documentGenerator": {
           "type": "object",
           "properties": {
-            "json": {
-              "type": "string",
-              "description": "Path to file or JSON text."
+            "fromDocument": {
+              "type": "object",
+              "properties": {
+                "json": {
+                  "type": "string",
+                  "description": "Path to file or JSON text."
+                },
+                "url": {
+                  "type": "string",
+                  "description": "Document URL. Dont used if 'json' property is set."
+                },
+                "output": {
+                  "type": "null"
+                }
+              },
+              "anyOf": [
+                {
+                  "required": [
+                    "json"
+                  ]
+                },
+                {
+                  "required": [
+                    "url"
+                  ]
+                }
+              ]
             },
-            "url": {
-              "type": "string",
-              "description": "Document URL. Dont used if 'json' property is set."
+            "jsonSchemaToOpenApi": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of schema`"
+                },
+                "schema": {
+                  "type": "string",
+                  "description": "Path to file or text of schema."
+                }
+              },
+              "required": [
+                "name",
+                "schema"
+              ]
             },
-            "output": {
-              "type": "null"
+            "preprocessors": {
+              "additionalProperties": {
+                "type": "object"
+              },
+              "description": "List of using preprocessors."
             }
           },
           "anyOf": [
             {
               "required": [
-                "json"
+                "fromDocument"
               ]
             },
             {
               "required": [
-                "url"
+                "jsonSchemaToOpenApi"
+              ]
+            },
+            {
+              "required": [
+                "preprocessors"
               ]
             }
           ]
-        },
-        "jsonSchemaToOpenApi": {
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "Name of schema`"
-            },
-            "schema": {
-              "type": "string",
-              "description": "Path to file or text of schema."
-            }
-          },
-          "required": [
-            "name",
-            "schema"
-          ]
-        },
-        "preprocessors": {
-          "additionalProperties": {
-            "type": "object"
-          },
-          "description": "List of using preprocessors."
         }
       },
-      "anyOf": [
-        {
-          "required": [
-            "fromDocument"
-          ]
-        },
-        {
-          "required": [
-            "jsonSchemaToOpenApi"
-          ]
-        },
-        {
-          "required": [
-            "preprocessors"
-          ]
-        }
+      "required": [
+        "codeGenerators"
       ]
     },
-    "codeGenerators": {
-      "$ref": "#/definitions/codeGenerators"
-    }
-  },
-  "required": [
-    "codeGenerators"
-  ],
-  "definitions": {
     "codeGenerators": {
       "description": "Generator used for code generation.",
       "type": "object",
