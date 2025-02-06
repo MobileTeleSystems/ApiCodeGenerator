@@ -39,6 +39,20 @@ public class DefaultTemplateFactoryTests
         Assert.AreEqual("template1\ntemplate2\ntemplate3", actual);
     }
 
+    [Test]
+    public void TemplateDir()
+    {
+        var settings = new NJsonSchema.CodeGeneration.CSharp.CSharpGeneratorSettings();
+        var src1 = new TestTemplateProvider("template1\n{% template Class.base %}");
+        var factory = new DefaultTemplateFactory(settings, [src1]);
+        settings.TemplateFactory = factory;
+        settings.TemplateDirectory = "Templates";
+
+        var actual = factory.CreateTemplate("CSharp", "File", new object()).Render();
+
+        Assert.AreEqual("overrided", actual);
+    }
+
     private class TestTemplateProvider : ITemplateProvider
     {
         private readonly string _providerKey = Guid.NewGuid().ToString();

@@ -169,6 +169,23 @@ public class FunctionalTests
         Assert.AreEqual(expected, actual);
     }
 
+    [TestCaseSource(nameof(TemplateDirectorySource))]
+    public void TemplateDirectory<T>(T settings)
+            where T : CSharpGeneratorBaseSettings
+    {
+        settings.CodeGeneratorSettings.TemplateDirectory = "Templates";
+        var template = settings.CodeGeneratorSettings.TemplateFactory.CreateTemplate("CSharp", "File", new());
+        var actual = template.Render();
+
+        Assert.That(actual, Is.EqualTo("overrided"));
+    }
+
+    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1204:Static elements should appear before instance elements", Justification = "After tests")]
+    public static IEnumerable<TestCaseData> TemplateDirectorySource()
+    {
+        yield return new TestCaseData(new CSharpClientGeneratorSettings()).SetName($"{nameof(TemplateDirectory)}_Client");
+    }
+
     private static string[] GetExpectedOperationsCode(string[]? bodyLines) => [
                 TestHelpers.GetExpectedSummary("Inform about environmental lighting conditions of a particular streetlight.", 4 + 4) +
                 GetExpectedPublisherCode("ReceiveLightMeasurement", "LightMeasuredPayload", 4 + 4, bodyLines),
