@@ -1,6 +1,6 @@
 using ApiCodeGenerator.Abstraction;
 using ApiCodeGenerator.AsyncApi.CSharp;
-using ApiCodeGenerator.AsyncApi.OperationNameGenerators;
+using ApiCodeGenerator.AsyncApi.NameGenerators;
 
 namespace ApiCodeGenerator.AsyncApi
 {

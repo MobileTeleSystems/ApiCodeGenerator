@@ -1,105 +1,43 @@
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NJsonSchema;
-using NJsonSchema.Generation;
-using NJsonSchema.Yaml;
-using YamlDotNet.Serialization;
 
-namespace ApiCodeGenerator.AsyncApi.DOM
+namespace ApiCodeGenerator.AsyncApi.DOM;
+
+public class AsyncApiDocument : JsonExtensionObject, IDocumentPathProvider
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public class AsyncApiDocument : IDocumentPathProvider
-    {
-        private static readonly JsonSerializerSettings JSONSERIALIZERSETTINGS = new()
-        {
-            PreserveReferencesHandling = PreserveReferencesHandling.None,
-            MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
-            ConstructorHandling = ConstructorHandling.Default,
-            ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-        };
+    /// <summary>Specifies the AsyncAPI Specification version being used.</summary>
+    [JsonProperty(PropertyName = "asyncApi", Order = 1, Required = Required.Always)]
+    public string AsyncApi { get; set; } = "3.0.0";
 
-        [JsonProperty(PropertyName = "asyncApi", Order = 1, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public string AsyncApi { get; set; }
+    /// <summary>Identifier of the application the AsyncAPI document is defining.</summary>
+    [JsonProperty(PropertyName = "id")]
+    public string? Id { get; set; }
 
-        [JsonProperty(PropertyName = "info", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public Info? Info { get; set; }
+    /// <summary>Provides metadata about the API. The metadata can be used by the clients if needed.</summary>
+    [JsonProperty(PropertyName = "info", Required = Required.Always)]
+    public Info Info { get; set; } = new();
 
-        [JsonProperty(PropertyName = "servers", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public IDictionary<string, Server> Servers { get; set; }
+    /// <summary>Provides connection details of servers.</summary>
+    [JsonProperty(PropertyName = "servers")]
+    public IDictionary<string, Reference<Server>>? Servers { get; set; }
 
-        [JsonProperty("defaultContentType")]
-        public string? DefaultContentType { get; set; }
+    /// <summary>Default content type to use when encoding/decoding a message's payload.</summary>
+    [JsonProperty("defaultContentType")]
+    public string? DefaultContentType { get; set; }
 
-        [JsonProperty("channels", DefaultValueHandling = DefaultValueHandling.Populate)]
-        public IDictionary<string, Channel>? Channels { get; set; } = new Dictionary<string, Channel>();
+    /// <summary>The channels used by this application.</summary>
+    [JsonProperty("channels")]
+    public IDictionary<string, NamedReference<Channel>> Channels { get; } = new Internal.NamedReferenceDictionary<Channel>();
 
-        [JsonProperty("components", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public virtual Components? Components { get; set; }
+    /// <summary>The operations this application MUST implement.</summary>
+    [JsonProperty("operations")]
+    public IDictionary<string, NamedReference<Operation>> Operations { get; } = new Internal.NamedReferenceDictionary<Operation>();
 
-        [JsonProperty("tags", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public virtual ICollection<Tag>? Tags { get; set; }
+    /// <summary>An element to hold various reusable objects for the specification.</summary>
+    [JsonProperty("components", ObjectCreationHandling = ObjectCreationHandling.Reuse)]
+    public Components Components { get; set; } = new();
 
-        [JsonProperty("externalDocs", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public ICollection<ExternalDocumentation>? ExternalDocs { get; set; }
-
-        [JsonIgnore]
-        public string? DocumentPath { get; set; }
-
-        /// <summary>
-        /// Load document from JSON text.
-        /// </summary>
-        /// <param name="data">JSON text.</param>
-        /// <returns>AsyncApi document object model.</returns>
-        public static Task<AsyncApiDocument> FromJsonAsync(string data)
-            => FromJsonAsync(data, null);
-
-        /// <summary>
-        /// Load document from JSON text.
-        /// </summary>
-        /// <param name="data">JSON text.</param>
-        /// <param name="documentPath"> Path to document. </param>
-        /// <returns>AsyncApi document object model.</returns>
-        public static Task<AsyncApiDocument> FromJsonAsync(string data, string? documentPath)
-        {
-            var document = JsonConvert.DeserializeObject<AsyncApiDocument>(data, JSONSERIALIZERSETTINGS)!;
-            document.DocumentPath = documentPath;
-            return UpdateSchemaReferencesAsync(document);
-        }
-
-        /// <summary>
-        /// Load document from YAML text.
-        /// </summary>
-        /// <param name="data">YAML text.</param>
-        /// <returns>AsyncApi document object model.</returns>
-        public static Task<AsyncApiDocument> FromYamlAsync(string data)
-            => FromYamlAsync(data, null);
-
-        /// <summary>
-        /// Load document from YAML text.
-        /// </summary>
-        /// <param name="data">YAML text.</param>
-        /// <param name="documentPath"> Path to document. </param>
-        /// <returns>AsyncApi document object model.</returns>
-        public static Task<AsyncApiDocument> FromYamlAsync(string data, string? documentPath)
-        {
-            var deserializer = new DeserializerBuilder().Build();
-            using var reader = new StringReader(data);
-            var yamlDocument = deserializer.Deserialize(reader)!;
-
-            var jObject = JObject.FromObject(yamlDocument)!;
-            var serializer = JsonSerializer.Create(JSONSERIALIZERSETTINGS);
-            var doc = jObject.ToObject<AsyncApiDocument>(serializer)!;
-            doc.DocumentPath = documentPath;
-            return UpdateSchemaReferencesAsync(doc);
-        }
-
-        private static async Task<AsyncApiDocument> UpdateSchemaReferencesAsync(AsyncApiDocument document)
-        {
-            await JsonSchemaReferenceUtilities.UpdateSchemaReferencesAsync(
-                       document,
-                       new JsonAndYamlReferenceResolver(new AsyncApiSchemaResolver(document, new SystemTextJsonSchemaGeneratorSettings())));
-            return document;
-        }
-    }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public string? DocumentPath { get; set; }
 }

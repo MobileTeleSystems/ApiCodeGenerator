@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ApiCodeGenerator.AsyncApi.DOM;
+﻿using ApiCodeGenerator.AsyncApi.DOM;
 using Newtonsoft.Json.Linq;
 using NJsonSchema;
 
@@ -23,7 +18,7 @@ namespace ApiCodeGenerator.AsyncApi.Tests.Infrastructure
         public AsyncApiDocument Process(AsyncApiDocument document, string? fileName)
         {
             Invocactions.Add(new(Settings, true, [document, fileName]));
-            document.Components?.Schemas.Values.First().Properties.Add(
+            document.Components.Schemas?.Values.First().Properties.Add(
                 "processedModel",
                 new JsonSchemaProperty());
             return document;

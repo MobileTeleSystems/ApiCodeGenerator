@@ -1,7 +1,6 @@
 using ApiCodeGenerator.AsyncApi.Amqp.CSharp;
 using ApiCodeGenerator.AsyncApi.DOM;
 using ApiCodeGenerator.AsyncApi.DOM.Bindings.Amqp;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static ApiCodeGenerator.AsyncApi.Tests.Infrastructure.TestHelpers;
 
@@ -65,7 +64,7 @@ public class AmqpFunctionalTests
         };
         var channelBinding = new ChannelBindings
         {
-            Amqp = new()
+            Amqp = new DOM.Bindings.Amqp.Channel
             {
                 Is = ChannelType.RoutingKey,
                 Exchange = new()
@@ -103,7 +102,7 @@ public class AmqpFunctionalTests
         // Assert
         string[] expectedPublisherCode = [
                 GetExpectedSummary("Inform about environmental lighting conditions of a particular streetlight.", 8) +
-                  GetExpectedAmqpPublisherCode("ReceiveLightMeasurement", "LightMeasuredPayload", identCnt: 8, channelBinding.Amqp.Exchange)
+                  GetExpectedAmqpPublisherCode("ReceiveLightMeasurement", "LightMeasuredPayload", identCnt: 8, channelBinding.Amqp?.Exchange)
             ];
         var expectedCode = GetExpectedCode(
             GetExpectedAmqpServiceCode(className, identCnt: 4, expectedPublisherCode) + "\n" +
@@ -133,7 +132,7 @@ public class AmqpFunctionalTests
         };
         var channelBinding = new ChannelBindings
         {
-            Amqp = new()
+            Amqp = new DOM.Bindings.Amqp.Channel
             {
                 Is = ChannelType.RoutingKey,
                 Exchange = new()
@@ -179,7 +178,7 @@ public class AmqpFunctionalTests
             ];
         var expectedCode = GetExpectedCode(
             GetExpectedAmqpServiceCode(className, identCnt: 4, expectedSubscriberCode) + "\n" +
-                GetExpectedPoolCode(className, identCnt: 4, channel) + "\n",
+                GetExpectedPoolCode(className, identCnt: 4) + "\n",
             GetExpectedDtoCode(),
             ns,
             GetAmqpUsings() + "\n");

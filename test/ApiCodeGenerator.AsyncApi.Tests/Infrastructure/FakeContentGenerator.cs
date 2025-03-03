@@ -1,4 +1,3 @@
-using ApiCodeGenerator.AsyncApi;
 using ApiCodeGenerator.AsyncApi.DOM;
 
 namespace ApiCodeGenerator.AsyncApi.Tests.Infrastructure;

@@ -32,8 +32,8 @@ public class CSharpAmqpServiceGenerator : CSharpGeneratorBase<CSharpAmqpServiceG
             .Append(poolArtifact);
     }
 
-    protected override CSharpOperationModel CreateOperationModel(string name, string channelPath, Channel channel, Operation operation)
-        => new CSharpAmqpOperationModel(name, channelPath, channel, operation, Settings, Resolver);
+    protected override CSharpOperationModel CreateOperationModel(string name, Operation operation)
+        => new CSharpAmqpOperationModel(name, operation, Settings, Resolver);
 
     protected CodeArtifact GenerateChannelPool(string className, CSharpOperationModel[] operations)
     {

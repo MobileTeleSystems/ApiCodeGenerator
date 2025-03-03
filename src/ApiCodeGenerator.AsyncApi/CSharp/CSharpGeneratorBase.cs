@@ -1,5 +1,6 @@
 ﻿using ApiCodeGenerator.AsyncApi.CSharp.Models;
 using ApiCodeGenerator.AsyncApi.DOM;
+using NJsonSchema;
 using NJsonSchema.CodeGeneration;
 using NJsonSchema.CodeGeneration.CSharp;
 
@@ -22,12 +23,14 @@ namespace ApiCodeGenerator.AsyncApi.CSharp
         public static TypeResolverBase CreateResolver(AsyncApiDocument apiDocument, TSettings settings)
         {
             var schemas = apiDocument.Components?.Schemas
-                ?? new Dictionary<string, NJsonSchema.JsonSchema>();
+                ?? new Dictionary<string, AsyncApiSchema>();
             schemas.TryGetValue("Exception", out var exceptionSchema);
             var resolver = new CSharpTypeResolver(settings.CSharpGeneratorSettings, exceptionSchema);
-            resolver.RegisterSchemaDefinitions(exceptionSchema is null
-                ? schemas
-                : schemas.Where(i => i.Value != exceptionSchema).ToDictionary(i => i.Key, i => i.Value));
+            resolver.RegisterSchemaDefinitions(
+                (exceptionSchema is null
+                    ? schemas
+                    : schemas.Where(i => i.Value != exceptionSchema))
+                .ToDictionary(i => i.Key, i => (JsonSchema)i.Value));
             return resolver;
         }
 
@@ -85,26 +88,15 @@ namespace ApiCodeGenerator.AsyncApi.CSharp
 
         protected IEnumerable<CSharpOperationModel> CreateOperationModels()
         {
-            if (Document.Channels is not null)
+            foreach (var operation in Document.Operations)
             {
-                foreach (var channel in Document.Channels)
-                {
-                    if (channel.Value.Publish is not null && Settings.OperationTypes.HasFlag(OperationTypes.Publish))
-                    {
-                        yield return CreateOperationModelInternal(channel.Key, channel.Value, channel.Value.Publish);
-                    }
-
-                    if (channel.Value.Subscribe is not null && Settings.OperationTypes.HasFlag(OperationTypes.Subscribe))
-                    {
-                        yield return CreateOperationModelInternal(channel.Key, channel.Value, channel.Value.Subscribe);
-                    }
-                }
+                yield return CreateOperationModelInternal(operation.Value);
             }
         }
 
-        protected virtual CSharpOperationModel CreateOperationModel(string name, string channelName, Channel channel, Operation operation)
+        protected virtual CSharpOperationModel CreateOperationModel(string name, Operation operation)
         {
-            return new CSharpOperationModel(name, channelName, channel, operation, Settings, Resolver);
+            return new CSharpOperationModel(name, operation, Settings, Resolver);
         }
 
         protected override string GenerateFile(IEnumerable<CodeArtifact> clientTypes, IEnumerable<CodeArtifact> dtoTypes, ClientGeneratorOutputType outputType)
@@ -135,11 +127,11 @@ namespace ApiCodeGenerator.AsyncApi.CSharp
         {
         }
 
-        private CSharpOperationModel CreateOperationModelInternal(string channelPath, Channel channel, Operation operation)
+        private CSharpOperationModel CreateOperationModelInternal(NamedReference<Operation> operation)
         {
-            var operationName = Settings.OperationNameGenerator.GetOperationName(Document, channelPath, channel.Subscribe == operation, operation);
-            var operationModel = CreateOperationModel(operationName, channelPath, channel, operation);
-            operationModel.ControllerName = Settings.OperationNameGenerator.GetClientName(Document, channelPath, channel.Subscribe == operation, operation);
+            var operationName = Settings.OperationNameGenerator.GetOperationName(Document, operation);
+            var operationModel = CreateOperationModel(operationName, operation);
+            operationModel.ControllerName = Settings.OperationNameGenerator.GetClientName(Document, operation);
             return operationModel;
         }
     }

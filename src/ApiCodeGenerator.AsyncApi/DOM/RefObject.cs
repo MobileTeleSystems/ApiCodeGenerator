@@ -1,34 +1,20 @@
-using Newtonsoft.Json;
 using NJsonSchema;
 using NJsonSchema.References;
 
 namespace ApiCodeGenerator.AsyncApi.DOM;
 
-public class RefObject<T> : IJsonReference
-where T : RefObject<T>
+/// <summary>
+/// Base object for referenced objects.
+/// </summary>
+public abstract class RefObject : IJsonReference
 {
-    [JsonProperty("$ref", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-    public string? ReferencePath { get; set; }
+    IJsonReference IJsonReference.ActualObject => this;
 
-    [JsonIgnore]
-    public T? Reference
-    {
-        get => (T?)((IJsonReference)this).Reference;
-        set => ((IJsonReference)this).Reference = value;
-    }
+    object? IJsonReference.PossibleRoot => null;
 
-    [JsonIgnore]
-    public T ActualObject => Reference ?? (T)this;
+    string? IJsonReferenceBase.ReferencePath { get; set; }
 
-    [JsonIgnore]
-    IJsonReference IJsonReference.ActualObject => ActualObject;
-
-    [JsonIgnore]
-    object? IJsonReference.PossibleRoot { get; }
-
-    [JsonIgnore]
     IJsonReference? IJsonReferenceBase.Reference { get; set; }
 
-    [JsonIgnore]
     string? IDocumentPathProvider.DocumentPath { get; set; }
 }

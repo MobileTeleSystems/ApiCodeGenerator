@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-using ApiCodeGenerator.Core.Converters;
-using Newtonsoft.Json;
+﻿using ApiCodeGenerator.Core.Converters;
 
 namespace ApiCodeGenerator.AsyncApi.Tests.Infrastructure;
 
@@ -260,6 +258,28 @@ internal static partial class TestHelpers
             .ToDictionary(
                 kv => kv.Key,
                 kv => (IReadOnlyCollection<Type>)[kv.Value]);
+
+    public static string ToYaml(this object obj, byte indent)
+    {
+        var serializer = new YamlDotNet.Serialization.SerializerBuilder()
+            .WithQuotingNecessaryStrings(true)
+            .WithDefaultScalarStyle(YamlDotNet.Core.ScalarStyle.SingleQuoted)
+            .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance)
+            .ConfigureDefaultValuesHandling(YamlDotNet.Serialization.DefaultValuesHandling.OmitDefaults)
+            .Build();
+        var yaml = serializer.Serialize(obj);
+        if (indent > 0)
+        {
+            var prefix = "\n" + new string(' ', indent);
+            return yaml.Replace("\n", prefix);
+        }
+
+        return yaml;
+    }
+
+    public static T? GetValueOrNull<T>(this IDictionary<string, T>? dict, string key)
+        where T : class
+    => dict?.TryGetValue(key, out var value) == true ? value : null;
 
     private static Task<IContentGenerator> CreateGenerator(TextReader document, CSharpClientGeneratorSettings settings)
     {

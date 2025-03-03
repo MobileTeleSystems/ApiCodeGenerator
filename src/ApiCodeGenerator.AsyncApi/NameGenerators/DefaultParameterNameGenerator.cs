@@ -1,7 +1,7 @@
 ﻿using ApiCodeGenerator.AsyncApi.DOM;
 using NJsonSchema;
 
-namespace ApiCodeGenerator.AsyncApi;
+namespace ApiCodeGenerator.AsyncApi.NameGenerators;
 
 public class DefaultParameterNameGenerator : IParameterNameGenerator
 {
@@ -20,6 +20,6 @@ public class DefaultParameterNameGenerator : IParameterNameGenerator
             firstCharacterMustBeAlpha: true);
     }
 
-    public string Generate(string parameterName, Parameter parameter, IEnumerable<Parameter> allParameters)
+    public string Generate(string parameterName, Parameter parameter, IEnumerable<NamedReference<Parameter>> allParameters)
         => GetVariableName(parameterName);
 }

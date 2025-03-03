@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using ApiCodeGenerator.AsyncApi.DOM;
 
-using ApiCodeGenerator.AsyncApi.DOM;
-
-namespace ApiCodeGenerator.AsyncApi;
+namespace ApiCodeGenerator.AsyncApi.NameGenerators;
 
 /// <summary>
 /// Заменяет части названий параметров.
@@ -31,7 +28,7 @@ public class ParameterNameGeneratorWithReplace : IParameterNameGenerator
     /// <param name="parameter">Текущий параметр.</param>
     /// <param name="allParameters">Все параметры.</param>
     /// <returns>Название параметра.</returns>
-    public string Generate(string parameterName, Parameter parameter, IEnumerable<Parameter> allParameters)
+    public string Generate(string parameterName, Parameter parameter, IEnumerable<NamedReference<Parameter>> allParameters)
     {
         var res = _replaceMap.Aggregate(parameterName, (current, replaceOption) =>
             current.Replace(replaceOption.Key, replaceOption.Value));

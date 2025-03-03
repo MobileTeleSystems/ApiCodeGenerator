@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static ApiCodeGenerator.AsyncApi.Tests.Infrastructure.TestHelpers;
 

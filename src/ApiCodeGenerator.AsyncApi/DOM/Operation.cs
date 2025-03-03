@@ -1,32 +1,44 @@
+using ApiCodeGenerator.AsyncApi.DOM.Security;
+using ApiCodeGenerator.AsyncApi.DOM.Traits;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace ApiCodeGenerator.AsyncApi.DOM
+namespace ApiCodeGenerator.AsyncApi.DOM;
+
+public class Operation : ExtensionRefObject, ITraitsAware<Operation, OperationTraits>
 {
-    public class Operation : RefObject<Operation>
-    {
-        [JsonProperty("bindings", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public OperationBindings? Bindings { get; set; }
+    [JsonProperty("action", Required = Required.Always)]
+    public required OperationAction Action { get; set; }
 
-        [JsonProperty("description")]
-        public string? Description { get; set; }
+    [JsonProperty("channel", Required = Required.Always)]
+    public required Reference<Channel> Channel { get; set; }
 
-        [JsonProperty("message")]
-        public Message Message { get; set; } = default!;
+    [JsonProperty("title")]
+    public string? Title { get; set; }
 
-        [JsonProperty("operationId")]
-        public string? OperationId { get; set; }
+    [JsonProperty("summary")]
+    public string? Summary { get; set; }
 
-        [JsonProperty("summary")]
-        public string? Summary { get; set; }
+    [JsonProperty("description")]
+    public string? Description { get; set; }
 
-        [JsonProperty("tags")]
-        public ICollection<Tag>? Tags { get; set; }
+    [JsonProperty("security")]
+    public ICollection<Reference<SecurityScheme>>? Security { get; set; }
 
-        [JsonProperty("traits")]
-        public JToken? Traits { get; set; }
+    [JsonProperty("tags")]
+    public ICollection<Reference<Tag>>? Tags { get; set; }
 
-        [JsonExtensionData]
-        public IDictionary<string, object> ExtensionData { get; set; } = new Dictionary<string, object>();
-    }
+    [JsonProperty("externalDocs")]
+    public Reference<ExternalDocumentation>? ExternalDocs { get; set; }
+
+    [JsonProperty("bindings")]
+    public Reference<OperationBindings>? Bindings { get; set; }
+
+    [JsonProperty("traits")]
+    public Reference<OperationTraits>? Traits { get; set; }
+
+    [JsonProperty("messages")]
+    public ICollection<Reference<Message>>? Messages { get; set; } = default!;
+
+    [JsonProperty("reply")]
+    public Reference<OperationReply>? Reply { get; set; }
 }

@@ -11,23 +11,25 @@ public class CSharpOperationModel
 
     public CSharpOperationModel(
         string operationName,
-        string channelName,
-        Channel channel,
         Operation operation,
         CSharpGeneratorBaseSettings settings,
         CSharpTypeResolver typeResolver)
     {
-        ChannelName = channelName;
-        Channel = channel;
+        Channel = operation.Channel.ActualObject;
+        ChannelAddress = Channel.Address;
         Operation = operation;
         OperationName = ConversionUtilities.ConvertToUpperCamelCase(operationName, true);
         _typeResolver = typeResolver;
-        Parameters = Channel.Parameters
-            .Select(cp =>
+
+        var actualParameters = Channel.Parameters?.Values.ToArray() ?? [];
+        Parameters = actualParameters
+            .Select((cp, ind) =>
                 new CSharpParameterModel(
-                    settings.ParameterNameGenerator.Generate(cp.Key, cp.Value, Channel.Parameters.Values),
-                    cp.Value,
-                    ResolveParameterType(cp.Key, cp.Value)))
+                    settings.ParameterNameGenerator.Generate(
+                        cp.ObjectId ?? $"param{ind}",
+                        cp,
+                        actualParameters),
+                    cp))
             .ToArray();
 
         Description = !string.IsNullOrEmpty(operation.Summary)
@@ -36,7 +38,7 @@ public class CSharpOperationModel
         HasDescription = !string.IsNullOrEmpty(Description);
     }
 
-    public string ChannelName { get; }
+    public string? ChannelAddress { get; }
 
     public string ControllerName { get; set; } = string.Empty;
 
@@ -44,15 +46,13 @@ public class CSharpOperationModel
 
     public bool HasDescription { get; }
 
-    public bool HasPublish => Channel.Publish == Operation;
-
-    public string OperationId => Operation.OperationId ?? string.Empty;
+    public bool HasPublish => Operation.Action == OperationAction.Send;
 
     public string OperationName { get; }
 
     public CSharpParameterModel[] Parameters { get; }
 
-    public string PayloadType => _payloadType ??= ResolvePayloadType(Operation.Message.ActualObject.Payload.ActualSchema, hint: null);
+    public string PayloadType => _payloadType ??= ResolvePayloadType(Operation.Messages.First().ActualObject.Payload?.ActualObject.ActualSchema, hint: null);
 
     protected Channel Channel { get; }
 
@@ -62,21 +62,9 @@ public class CSharpOperationModel
     {
         if (!jsonSchema.HasTypeNameTitle && string.IsNullOrEmpty(hint))
         {
-            hint = ConversionUtilities.ConvertToUpperCamelCase($"{Operation.Message.ActualObject.Name}Payload", false);
+            hint = ConversionUtilities.ConvertToUpperCamelCase($"{Operation.Messages.First().ActualObject.Name}Payload", false);
         }
 
         return _typeResolver.Resolve(jsonSchema, false, hint);
-    }
-
-    protected virtual string ResolveParameterType(string parameterName, Parameter operationParameter)
-    {
-        var schema = operationParameter.ActualObject.Schema.ActualSchema;
-        var typeNameHint = !schema.HasTypeNameTitle
-            ? parameterName
-            : null;
-
-        var isNullable = schema.IsNullable(SchemaType.OpenApi3);
-
-        return _typeResolver.Resolve(schema, isNullable, typeNameHint);
     }
 }

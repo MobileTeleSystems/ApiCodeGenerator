@@ -4,7 +4,7 @@ namespace ApiCodeGenerator.AsyncApi.DOM.Bindings.Amqp;
 /// This object contains information about the message representation in AMQP.
 /// </summary>
 [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.2.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-public partial class Message : RefObject<Message>
+public partial class Message
 {
     /// <summary>
     /// A MIME encoding for the message content.

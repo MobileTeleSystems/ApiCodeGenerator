@@ -1,6 +1,6 @@
 namespace ApiCodeGenerator.AsyncApi.DOM;
 
-public class MessageBindings : RefObject<MessageBindings>
+public class MessageBindings : ExtensionRefObject
 {
     public Bindings.Amqp.Message? Amqp { get; set; }
 }

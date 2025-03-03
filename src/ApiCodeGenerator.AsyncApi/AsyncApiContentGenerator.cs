@@ -2,131 +2,131 @@ using System.Text.RegularExpressions;
 using ApiCodeGenerator.Abstraction;
 using ApiCodeGenerator.AsyncApi.CSharp;
 using ApiCodeGenerator.AsyncApi.DOM;
+using ApiCodeGenerator.AsyncApi.DOM.Serialization;
 using ApiCodeGenerator.Core.Converters;
 using Newtonsoft.Json;
 
-namespace ApiCodeGenerator.AsyncApi
+namespace ApiCodeGenerator.AsyncApi;
+
+public abstract class AsyncApiContentGenerator<TContentGenerator, TGenerator, TSettings> : IContentGenerator
+    where TContentGenerator : AsyncApiContentGenerator<TContentGenerator, TGenerator, TSettings>, new()
+    where TGenerator : CSharpGeneratorBase<TSettings>
+    where TSettings : CSharpGeneratorBaseSettings, new()
 {
-    public abstract class AsyncApiContentGenerator<TContentGenerator, TGenerator, TSettings> : IContentGenerator
-        where TContentGenerator : AsyncApiContentGenerator<TContentGenerator, TGenerator, TSettings>, new()
-        where TGenerator : CSharpGeneratorBase<TSettings>
-        where TSettings : CSharpGeneratorBaseSettings, new()
+    internal static readonly string[] UNWRAP_PROPS = [
+        nameof(CSharpGeneratorBaseSettings.CSharpGeneratorSettings),
+    ];
+
+    protected TGenerator Generator { get; private set; } = null!;
+
+    protected TSettings Settings { get; private set; } = null!;
+
+    public static async Task<IContentGenerator> CreateAsync(GeneratorContext context)
     {
-        internal static readonly string[] UNWRAP_PROPS = [
-            nameof(CSharpGeneratorBaseSettings.CSharpGeneratorSettings),
-        ];
+        var document = await LoadDocumentAsync(context);
+        var variables = GetAdditionalVariables(document);
+        var settings = LoadSettings(context, variables);
+        var resolver = CSharpGeneratorBase<TSettings>.CreateResolver(document, settings);
 
-        protected TGenerator Generator { get; private set; } = null!;
+        var generator = (TGenerator)Activator.CreateInstance(typeof(TGenerator), document, settings, resolver);
 
-        protected TSettings Settings { get; private set; } = null!;
-
-        public static async Task<IContentGenerator> CreateAsync(GeneratorContext context)
+        var contentGenerator = new TContentGenerator()
         {
-            var document = await LoadDocumentAsync(context);
-            var variables = GetAdditionalVariables(document);
-            var settings = LoadSettings(context, variables);
-            var resolver = CSharpGeneratorBase<TSettings>.CreateResolver(document, settings);
+            Generator = generator,
+            Settings = settings,
+        };
+        return contentGenerator;
+    }
 
-            var generator = (TGenerator)Activator.CreateInstance(typeof(TGenerator), document, settings, resolver);
+    public virtual string Generate() => Generator.Generate();
 
-            var contentGenerator = new TContentGenerator()
-            {
-                Generator = generator,
-                Settings = settings,
-            };
-            return contentGenerator;
-        }
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "Удобнее рядом с использующим кодом")]
+    private static readonly Regex SEM_VER_PARSER = new(
+        @"^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?:-(?<prerelease>[0-9A-Za-z-]+))?(?:\+(?<buildmetadata>[0-9A-Za-z-]+))?$",
+        RegexOptions.Singleline | RegexOptions.Compiled);
 
-        public virtual string Generate() => Generator.Generate();
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "Удобнее рядом с использующим кодом")]
-        private static readonly Regex SEM_VER_PARSER = new(
-            @"^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?:-(?<prerelease>[0-9A-Za-z-]+))?(?:\+(?<buildmetadata>[0-9A-Za-z-]+))?$",
-            RegexOptions.Singleline | RegexOptions.Compiled);
-
-        protected static IReadOnlyDictionary<string, string>? GetAdditionalVariables(AsyncApiDocument apiDocument)
+    protected static IReadOnlyDictionary<string, string>? GetAdditionalVariables(AsyncApiDocument apiDocument)
+    {
+        var version = apiDocument.Info?.Version;
+        if (!string.IsNullOrEmpty(version))
         {
-            var version = apiDocument.Info?.Version;
-            if (!string.IsNullOrEmpty(version))
+            var match = SEM_VER_PARSER.Match(version);
+            if (match.Success)
             {
-                var match = SEM_VER_PARSER.Match(version);
-                if (match.Success)
+                return new Dictionary<string, string>
                 {
-                    return new Dictionary<string, string>
-                    {
-                        ["Version.Major"] = match.Groups["major"].Value,
-                        ["Version.Minor"] = match.Groups["minor"].Value,
-                        ["Version.Patch"] = match.Groups["patch"].Value,
-                        ["Version.Prerelease"] = match.Groups["Prerelease"].Value,
-                        ["Version.Build"] = match.Groups["buildmetadata"].Value,
-                    };
-                }
+                    ["Version.Major"] = match.Groups["major"].Value,
+                    ["Version.Minor"] = match.Groups["minor"].Value,
+                    ["Version.Patch"] = match.Groups["patch"].Value,
+                    ["Version.Prerelease"] = match.Groups["Prerelease"].Value,
+                    ["Version.Build"] = match.Groups["buildmetadata"].Value,
+                };
             }
-
-            return null;
         }
 
-        protected static T InvokePreprocessors<T>(T data,
-            Preprocessors? preprocessors,
-            string? filePath,
-            ILogger? logger)
+        return null;
+    }
+
+    protected static T InvokePreprocessors<T>(T data,
+        Preprocessors? preprocessors,
+        string? filePath,
+        ILogger? logger)
+    {
+        if (preprocessors?.TryGetValue(typeof(T), out var documentPreprocessors) == true)
         {
-            if (preprocessors?.TryGetValue(typeof(T), out var documentPreprocessors) == true)
+            foreach (var processor in documentPreprocessors)
             {
-                foreach (var processor in documentPreprocessors)
+                data = processor switch
                 {
-                    data = processor switch
-                    {
-                        Func<T, string?, T> p => p.Invoke(data, filePath),
-                        Func<T, string?, ILogger?, T> p => p.Invoke(data, filePath, logger),
-                        _ => data,
-                    };
-                }
+                    Func<T, string?, T> p => p.Invoke(data, filePath),
+                    Func<T, string?, ILogger?, T> p => p.Invoke(data, filePath, logger),
+                    _ => data,
+                };
             }
-
-            return data;
         }
 
-        private static async Task<AsyncApiDocument> LoadDocumentAsync(GeneratorContext context)
-        {
-            var data = await context.DocumentReader!.ReadToEndAsync();
-            data = InvokePreprocessors<string>(data, context.Preprocessors, context.DocumentPath, context.Logger);
+        return data;
+    }
 
-            AsyncApiDocument document;
+    private static async Task<AsyncApiDocument> LoadDocumentAsync(GeneratorContext context)
+    {
+        var data = await context.DocumentReader!.ReadToEndAsync();
+        data = InvokePreprocessors<string>(data, context.Preprocessors, context.DocumentPath, context.Logger);
+
+        AsyncApiDocument document;
+        try
+        {
+            document = await AsyncApiSerializer.FromJsonAsync(data, context.DocumentPath).ConfigureAwait(false);
+        }
+        catch (JsonException ex)
+        {
             try
             {
-                document = await AsyncApiDocument.FromJsonAsync(data, context.DocumentPath).ConfigureAwait(false);
+                document = await AsyncApiSerializer.FromYamlAsync(data, context.DocumentPath).ConfigureAwait(false);
             }
-            catch (JsonException ex)
+            catch (YamlDotNet.Core.YamlException ex2)
             {
-                try
-                {
-                    document = await AsyncApiDocument.FromYamlAsync(data, context.DocumentPath).ConfigureAwait(false);
-                }
-                catch (YamlDotNet.Core.YamlException ex2)
-                {
-                    throw new InvalidOperationException(
-                        $"Can not read document as JSON ({ex.Message}) or YAML ({ex2.Message}).");
-                }
+                throw new InvalidOperationException(
+                    $"Can not read document as JSON ({ex.Message}) or YAML ({ex2.Message}).");
             }
-
-            document = InvokePreprocessors<AsyncApiDocument>(document, context.Preprocessors, context.DocumentPath, context.Logger);
-            return document;
         }
 
-        private static TSettings LoadSettings(GeneratorContext context, IReadOnlyDictionary<string, string>? variables)
+        document = InvokePreprocessors<AsyncApiDocument>(document, context.Preprocessors, context.DocumentPath, context.Logger);
+        return document;
+    }
+
+    private static TSettings LoadSettings(GeneratorContext context, IReadOnlyDictionary<string, string>? variables)
+    {
+        var serializer = new JsonSerializer
         {
-            var serializer = new JsonSerializer
+            Converters =
             {
-                Converters =
-                {
-                    new SettingsConverter(
-                        typeof(TSettings),
-                        UNWRAP_PROPS,
-                        (s, p, v) => Helpers.SettingsHelpers.SetSpecialSettings(context.Extensions, (ClientGeneratorBaseSettings)s, p, v)),
-                },
-            };
-            return context.GetSettings<TSettings>(serializer, variables) ?? new();
-        }
+                new SettingsConverter(
+                    typeof(TSettings),
+                    UNWRAP_PROPS,
+                    (s, p, v) => Helpers.SettingsHelpers.SetSpecialSettings(context.Extensions, (ClientGeneratorBaseSettings)s, p, v)),
+            },
+        };
+        return context.GetSettings<TSettings>(serializer, variables) ?? new();
     }
 }

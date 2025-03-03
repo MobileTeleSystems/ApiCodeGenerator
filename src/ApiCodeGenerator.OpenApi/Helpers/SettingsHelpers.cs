@@ -5,7 +5,7 @@ using ApiCodeGenerator.Abstraction;
 using Newtonsoft.Json.Linq;
 
 #if ASYNC_API
-using ApiCodeGenerator.AsyncApi.OperationNameGenerators;
+using ApiCodeGenerator.AsyncApi.NameGenerators;
 
 namespace ApiCodeGenerator.AsyncApi.Helpers;
 #else

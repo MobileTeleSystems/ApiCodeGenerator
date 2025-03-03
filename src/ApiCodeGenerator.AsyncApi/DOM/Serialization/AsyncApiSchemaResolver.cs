@@ -1,8 +1,7 @@
-using ApiCodeGenerator.AsyncApi.DOM;
 using NJsonSchema;
 using NJsonSchema.Generation;
 
-namespace ApiCodeGenerator.AsyncApi;
+namespace ApiCodeGenerator.AsyncApi.DOM.Serialization;
 
 internal class AsyncApiSchemaResolver : JsonSchemaResolver
 {
@@ -19,10 +18,12 @@ internal class AsyncApiSchemaResolver : JsonSchemaResolver
 
     public override void AppendSchema(JsonSchema schema, string? typeNameHint)
     {
-        if (Document.Components?.Schemas?.Values.Contains(schema) != true)
+        // append schemas loaded from external documents
+        if (Document.Components.Schemas?.Values.Contains(schema) != true)
         {
-            var typeName = _typenameGenerator.Generate(schema, typeNameHint, Document.Components!.Schemas.Keys);
-            Document.Components!.Schemas[typeName] = schema;
+            Document.Components.Schemas ??= new Dictionary<string, AsyncApiSchema>();
+            var typeName = _typenameGenerator.Generate(schema, typeNameHint, Document.Components.Schemas.Keys);
+            Document.Components.Schemas[typeName] = (AsyncApiSchema)schema;
         }
     }
 }

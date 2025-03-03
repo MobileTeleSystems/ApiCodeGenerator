@@ -1,5 +1,3 @@
-using System;
-
 namespace ApiCodeGenerator.AsyncApi;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1601:PartialElementsMustBeDocumented", Justification = "Reviewed.")]

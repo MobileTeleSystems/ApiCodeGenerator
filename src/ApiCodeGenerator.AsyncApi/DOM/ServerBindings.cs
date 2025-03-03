@@ -1,9 +1,6 @@
-using Newtonsoft.Json;
+namespace ApiCodeGenerator.AsyncApi.DOM;
 
-namespace ApiCodeGenerator.AsyncApi.DOM
+public class ServerBindings : ExtensionRefObject
 {
-    public class ServerBindings : RefObject<ServerBindings>
-    {
-        public Bindings.Amqp.Server? Amqp { get; set; }
-    }
+    public Bindings.Amqp.Server? Amqp { get; set; }
 }

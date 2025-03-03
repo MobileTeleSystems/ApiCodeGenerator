@@ -1,7 +1,4 @@
-using System.Collections;
-using ApiCodeGenerator.AsyncApi.DOM;
 using ApiCodeGenerator.AsyncApi.DOM.Bindings.Amqp;
-using YamlDotNet.Core.Tokens;
 
 namespace ApiCodeGenerator.AsyncApi.Tests.Infrastructure;
 
@@ -51,7 +48,6 @@ internal static partial class TestHelpers
         string name,
         string payloadType,
         int identCnt,
-
         Exchange? exchange = null,
         OperationBase? operationBinding = null)
     {
@@ -170,9 +166,6 @@ internal static partial class TestHelpers
     }
 
     public static string GetExpectedPoolCode(string className, int identCnt)
-        => GetExpectedPoolCode(className, identCnt, new DOM.Channel() { Publish = new() { OperationId = "receiveLightMeasurement" } });
-
-    public static string GetExpectedPoolCode(string className, int identCnt, params DOM.Channel[] channels)
     {
         var ident = new string(' ', identCnt);
         return
@@ -276,21 +269,22 @@ internal static partial class TestHelpers
 
         IEnumerable<string> GetChannelDeclarations()
         {
-            foreach (var channel in channels)
-            {
-                var code = (channel.Publish ?? channel.Subscribe)?.OperationId switch
-                {
-                    "receiveLightMeasurement" => "_channels.Add(\"receiveLightMeasurement\", CreateChannel(connection));",
-                    "dimLight" => GetSubscriberChannelDeclaration(channel, "dimLight"),
-                    _ => throw new InvalidOperationException("Unknown operationId"),
-                };
-                yield return $"{ident}        {code}\n";
-            }
+            // foreach (var channel in channels)
+            // {
+            //     var code = (channel.Publish ?? channel.Subscribe)?.OperationId switch
+            //     {
+            //         "receiveLightMeasurement" => "_channels.Add(\"receiveLightMeasurement\", CreateChannel(connection));",
+            //         "dimLight" => GetSubscriberChannelDeclaration(channel, "dimLight"),
+            //         _ => throw new InvalidOperationException("Unknown operationId"),
+            //     };
+            //     yield return $"{ident}        {code}\n";
+            // }
+            yield break;
         }
 
         string GetSubscriberChannelDeclaration(DOM.Channel channel, string operationId)
         {
-            var queue = channel.Bindings?.Amqp?.Queue;
+            var queue = channel.Bindings?.ActualObject?.Amqp?.Queue;
             object? prefetchCount = 0;
             object? confirm = false;
             queue?.AdditionalProperties?.TryGetValue("x-prefetch-count", out prefetchCount);

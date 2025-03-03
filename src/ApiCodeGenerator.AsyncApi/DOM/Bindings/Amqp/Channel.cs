@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace ApiCodeGenerator.AsyncApi.DOM.Bindings.Amqp;
 
-public class Channel : RefObject<Channel>
+public class Channel
 {
     private IDictionary<string, object>? _additionalProperties;
 
@@ -17,13 +17,13 @@ public class Channel : RefObject<Channel>
     /// When is=routingKey, this object defines the exchange properties.
     /// </summary>
     [JsonProperty("exchange", Required = Required.DisallowNull, NullValueHandling = NullValueHandling.Ignore)]
-    public Exchange Exchange { get; set; } = default!;
+    public Exchange? Exchange { get; set; }
 
     /// <summary>
     /// When is=queue, this object defines the queue properties.
     /// </summary>
     [JsonProperty("queue", Required = Required.DisallowNull, NullValueHandling = NullValueHandling.Ignore)]
-    public Queue Queue { get; set; } = default!;
+    public Queue? Queue { get; set; }
 
     /// <summary>
     /// The version of this binding. If omitted, 'latest' MUST be assumed.

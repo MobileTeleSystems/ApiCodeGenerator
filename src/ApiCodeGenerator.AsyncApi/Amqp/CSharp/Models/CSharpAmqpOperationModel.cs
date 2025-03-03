@@ -9,14 +9,12 @@ public class CSharpAmqpOperationModel : CSharpOperationModel
 {
     public CSharpAmqpOperationModel(
         string name,
-        string channelPath,
-        DOM.Channel channel,
         Operation operation,
         CSharpGeneratorBaseSettings settings,
         CSharpTypeResolver typeResolver)
-        : base(name, channelPath, channel, operation, settings, typeResolver)
+        : base(name, operation, settings, typeResolver)
     {
-        var channelBinding = channel.Bindings?.Amqp?.ActualObject;
+        var channelBinding = operation.Channel.ActualObject.Bindings?.ActualObject.Amqp;
         if (channelBinding != null)
         {
             var exchange = channelBinding.Exchange;
@@ -44,7 +42,7 @@ public class CSharpAmqpOperationModel : CSharpOperationModel
             }
         }
 
-        var operationBinding = operation.Bindings?.Amqp?.ActualObject;
+        var operationBinding = operation.Bindings?.ActualObject.Amqp;
         if (operationBinding != null)
         {
             Bcc = operationBinding.Bcc.ToArray();

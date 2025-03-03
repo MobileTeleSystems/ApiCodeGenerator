@@ -1,4 +1,6 @@
-namespace ApiCodeGenerator.AsyncApi;
+using ApiCodeGenerator.AsyncApi.DOM;
+
+namespace ApiCodeGenerator.AsyncApi.NameGenerators;
 
 /// <summary>The parameter name generator interface.</summary>
 public interface IParameterNameGenerator
@@ -8,5 +10,5 @@ public interface IParameterNameGenerator
     /// <param name="parameter">The parameter.</param>
     /// <param name="allParameters">All parameters.</param>
     /// <returns>Generated parameter name.</returns>
-    string Generate(string parameterName, DOM.Parameter parameter, IEnumerable<DOM.Parameter> allParameters);
+    public string Generate(string parameterName, Parameter parameter, IEnumerable<NamedReference<Parameter>> allParameters);
 }

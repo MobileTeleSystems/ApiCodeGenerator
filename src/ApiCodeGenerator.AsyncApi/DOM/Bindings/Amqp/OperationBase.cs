@@ -9,7 +9,7 @@ namespace ApiCodeGenerator.AsyncApi.DOM.Bindings.Amqp;
 [Serialization.KnownType("0.2.0", typeof(OperationV0_2))]
 [Serialization.KnownType("0.3.0", typeof(OperationV0_3))]
 [Serialization.KnownType("latest", typeof(OperationV0_3))]
-public abstract class OperationBase : RefObject<OperationBase>
+public abstract class OperationBase
 {
     /// <summary>
     /// TTL (Time-To-Live) for the message. It MUST be greater than or equal to zero.
