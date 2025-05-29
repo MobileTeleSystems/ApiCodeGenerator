@@ -34,7 +34,7 @@ public class Operation : ExtensionRefObject, ITraitsAware<Operation, OperationTr
     public Reference<OperationBindings>? Bindings { get; set; }
 
     [JsonProperty("traits")]
-    public Reference<OperationTraits>? Traits { get; set; }
+    public ICollection<Reference<OperationTraits>>? Traits { get; set; }
 
     [JsonProperty("messages")]
     public ICollection<Reference<Message>>? Messages { get; set; } = default!;

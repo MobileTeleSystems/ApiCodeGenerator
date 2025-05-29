@@ -7,15 +7,17 @@ public class InfoTests : TestBase
         info:
           title: test
         """,
-        TestName = $"{nameof(RequiredProperties)} - without version")]
+        "version",
+        TestName = $"{nameof(RequiredProperties)}(version)")]
     [TestCase("""
         asyncapi: '3.0.0'
         info:
           version: test
         """,
-        TestName = $"{nameof(RequiredProperties)} - without title")]
-    public void RequiredProperties(string yaml)
-        => RequiredPropertiesTest(yaml);
+        "title",
+        TestName = $"{nameof(RequiredProperties)}(title)")]
+    public void RequiredProperties(string yaml, string propName)
+        => RequiredPropertiesTest(yaml, propName);
 
     [Test]
     public async Task ReadProperties()

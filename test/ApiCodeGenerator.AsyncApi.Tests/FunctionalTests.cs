@@ -170,9 +170,9 @@ public class FunctionalTests
 
     private static string[] GetExpectedOperationsCode(string[]? bodyLines) => [
                 TestHelpers.GetExpectedSummary("Inform about environmental lighting conditions of a particular streetlight.", 4 + 4) +
-                GetExpectedPublisherCode("ReceiveLightMeasurement", "LightMeasuredPayload", 4 + 4, bodyLines),
-            GetExpectedSubscriberCode("TurnOn", "TurnOnOffPayload", 4 + 4, bodyLines),
-            GetExpectedSubscriberCode("TurnOff", "TurnOnOffPayload", 4 + 4, bodyLines),
-            GetExpectedSubscriberCode("DimLight", "DimLightPayload", 4 + 4, bodyLines),
+                GetExpectedReceiverCode("ReceiveLightMeasurement", "LightMeasuredPayload", 4 + 4, bodyLines),
+            GetExpectedSenderCode("TurnOn", "TurnOnOffPayload", 4 + 4, bodyLines),
+            GetExpectedSenderCode("TurnOff", "TurnOnOffPayload", 4 + 4, bodyLines),
+            GetExpectedSenderCode("DimLight", "DimLightPayload", 4 + 4, bodyLines),
         ];
 }

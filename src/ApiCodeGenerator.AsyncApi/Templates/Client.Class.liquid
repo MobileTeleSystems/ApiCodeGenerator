@@ -14,15 +14,15 @@
     /// </summary>
   {%- endif -%}
   {%- capture parametersText %} {%- template Client.Operation.Parameters -%} {% endcapture -%}
-  {%- if operation.HasPublish -%}
+  {%- if operation.HasSend -%}
     public Task {{operation.OperationName}}({{parametersText}}, {{operation.PayloadType}} payload)
     {
-        {% template Client.Opertaion.Publish.Body | tab %}
+        {% template Client.Operation.Send.Body | tab %}
     }
   {%-  else -%}
     public void {{operation.OperationName}}({{parametersText}}, Action<{{operation.PayloadType}}> callback)
     {
-        {% template Client.Opertaion.Subscribe.Body | tab %}
+        {% template Client.Operation.Receive.Body | tab %}
     }
   {%- endif -%}
 

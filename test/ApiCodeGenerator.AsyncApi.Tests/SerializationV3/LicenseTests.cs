@@ -6,9 +6,10 @@ public class LicenseTests : TestBase
         {{YamlHeader}}
           license: {}
         """,
-        TestName = $"{nameof(RequiredProperties)} - without name")]
-    public void RequiredProperties(string yaml)
-        => RequiredPropertiesTest(yaml);
+        "name",
+        TestName = $"{nameof(RequiredProperties)}(name)")]
+    public void RequiredProperties(string yaml, string propName)
+        => RequiredPropertiesTest(yaml, propName);
 
     [Test]
     public async Task ReadProperties()

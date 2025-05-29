@@ -35,7 +35,7 @@ public class AsyncApiDocument : JsonExtensionObject, IDocumentPathProvider
 
     /// <summary>An element to hold various reusable objects for the specification.</summary>
     [JsonProperty("components", ObjectCreationHandling = ObjectCreationHandling.Reuse)]
-    public Components Components { get; set; } = new();
+    public Components Components { get; } = new();
 
     /// <inheritdoc/>
     [JsonIgnore]

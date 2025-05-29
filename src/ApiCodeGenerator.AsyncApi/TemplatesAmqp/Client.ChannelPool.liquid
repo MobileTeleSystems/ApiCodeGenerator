@@ -36,11 +36,11 @@ public class {{ChannelPoolType}} //: IChannelPool
         _connection = connection;
 
     {%- for operation in OperationModels -%}
-      {%- if operation.HasPublish -%}
-        _channels.Add("{{operation.OperationId}}", CreateChannel(connection));
+      {%- if operation.HasSend -%}
+        _channels.Add("{{operation.OperationName}}", CreateChannel(connection));
       {%-  else -%}
         _channels.Add(
-            "{{operation.OperationId}}",
+            "{{operation.OperationName}}",
             CreateChannel(
                 connection,
                 {{operation.PrefetchCount}},

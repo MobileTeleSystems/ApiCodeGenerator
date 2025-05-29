@@ -167,8 +167,8 @@ internal static partial class TestHelpers
         ident + "/// </summary>\n";
     }
 
-    public static string GetExpectedPublisherCode(string name, string payloadType, int identCnt)
-        => GetExpectedPublisherCode(name, payloadType, identCnt, []);
+    public static string GetExpectedSenderCode(string name, string payloadType, int identCnt)
+        => GetExpectedSenderCode(name, payloadType, identCnt, []);
 
     /// <summary>
     /// Возвращает ожидаемый код паблишера.
@@ -178,7 +178,7 @@ internal static partial class TestHelpers
     /// <param name="identCnt">Количество лидирующих пробелов.</param>
     /// <param name="bodyLines">Тело метода. Если null то тело не формируется. Если пустой массив то в теле пишется 'return Task.CompleetedTask'.</param>
     /// <returns>Строка с кодом паблишера.</returns>
-    public static string GetExpectedPublisherCode(string name, string payloadType, int identCnt, string[]? bodyLines)
+    public static string GetExpectedSenderCode(string name, string payloadType, int identCnt, string[]? bodyLines)
     {
         var ident = new string(' ', identCnt);
         var body = bodyLines switch
@@ -197,8 +197,8 @@ internal static partial class TestHelpers
               + bodyBlock;
     }
 
-    public static string GetExpectedSubscriberCode(string name, string payloadType, int identCnt)
-        => GetExpectedSubscriberCode(name, payloadType, identCnt, []);
+    public static string GetExpectedReceiverCode(string name, string payloadType, int identCnt)
+        => GetExpectedReceiverCode(name, payloadType, identCnt, []);
 
     /// <summary>
     /// Возвращает ожидаемый код подписчика.
@@ -208,7 +208,7 @@ internal static partial class TestHelpers
     /// <param name="identCnt">Количество лидирующих пробелов.</param>
     /// <param name="bodyLines">Тело метода. Если null то тело не формируется. Если пустой массив то в теле пишется 'return Task.CompleetedTask'.</param>
     /// <returns>Строка с кодом подписчика.</returns>
-    public static string GetExpectedSubscriberCode(string name, string payloadType, int identCnt, string[]? bodyLines)
+    public static string GetExpectedReceiverCode(string name, string payloadType, int identCnt, string[]? bodyLines)
     {
         var ident = new string(' ', identCnt);
         var body = bodyLines switch

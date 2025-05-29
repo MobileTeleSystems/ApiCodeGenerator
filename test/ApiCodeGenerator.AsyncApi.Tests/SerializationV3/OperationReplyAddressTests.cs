@@ -18,7 +18,7 @@ public class OperationReplyAddressTests : TestBase
             {{OperationReplyAddressDefinition}} {}
             """;
 
-        RequiredPropertiesTest(yaml);
+        RequiredPropertiesTest(yaml, "location");
     }
 
     [Test]

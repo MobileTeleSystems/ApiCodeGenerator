@@ -54,5 +54,5 @@ public class Message : ExtensionRefObject, ITraitsAware<Message, MessageTraits>
     public ICollection<MessageExample>? Examples { get; set; }
 
     [JsonProperty("traits")]
-    public Reference<MessageTraits>? Traits { get; set; }
+    public ICollection<Reference<MessageTraits>>? Traits { get; set; }
 }

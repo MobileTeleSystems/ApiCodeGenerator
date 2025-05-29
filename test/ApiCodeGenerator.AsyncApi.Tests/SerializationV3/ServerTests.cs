@@ -26,7 +26,8 @@ public class ServerTests : TestBase
               test:
                 host: ''
         """,
-        TestName = $"{nameof(RequiredProperties)} - without protocol")]
+        "protocol",
+        TestName = $"{nameof(RequiredProperties)}(protocol)")]
     [TestCase($"""
         {YamlHeader}
         components:
@@ -34,9 +35,10 @@ public class ServerTests : TestBase
               test:
                 protocol: ''
         """,
-        TestName = $"{nameof(RequiredProperties)} - without host")]
-    public void RequiredProperties(string yaml)
-        => RequiredPropertiesTest(yaml);
+        "host",
+        TestName = $"{nameof(RequiredProperties)}(host)")]
+    public void RequiredProperties(string yaml, string propName)
+        => RequiredPropertiesTest(yaml, propName);
 
     [Test]
     public async Task ReadProperties()

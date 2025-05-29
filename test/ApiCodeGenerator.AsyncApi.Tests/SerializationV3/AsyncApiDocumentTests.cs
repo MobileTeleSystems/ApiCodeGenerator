@@ -4,10 +4,10 @@ namespace ApiCodeGenerator.AsyncApi.Tests.SerializationV3;
 
 public class AsyncApiDocumentTests : TestBase
 {
-    [TestCase("asyncapi: '3.0.0'")]
-    [TestCase("info: { title: 'test', version: '1.0' }")]
-    public void RequiredProperties(string yaml)
-        => RequiredPropertiesTest(yaml);
+    [TestCase("asyncapi: '3.0.0'", "info")]
+    [TestCase("info: { title: 'test', version: '1.0' }", "asyncapi")]
+    public void RequiredProperties(string yaml, string propName)
+        => RequiredPropertiesTest(yaml, propName);
 
     [Test]
     public async Task ReadExtensions()

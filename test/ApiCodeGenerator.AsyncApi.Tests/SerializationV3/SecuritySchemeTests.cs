@@ -14,8 +14,8 @@ public class SecuritySchemeTests : TestBase
         """;
 
     [TestCaseSource(nameof(GetRequiredPropertiesCases))]
-    public void RequiredProperties(string yaml)
-      => RequiredPropertiesTest(yaml);
+    public void RequiredProperties(string yaml, string propName)
+      => RequiredPropertiesTest(yaml, propName);
 
     [Test]
     public async Task ReadExtensions()
@@ -47,52 +47,59 @@ public class SecuritySchemeTests : TestBase
             {YamlHeader}
             {SchemeDefinintion}
                   description: ''
-            """)
-            .SetArgDisplayNames("Type not set");
+            """,
+            "type")
+            .SetArgDisplayNames("yaml", "type");
 
         yield return new TestCaseData($"""
             {YamlHeader}
             {SchemeDefinintion}
                   type: apiKey
-            """)
-            .SetArgDisplayNames("ApiKey without 'in'");
+            """,
+            "in")
+            .SetArgDisplayNames("ApiKey", "in");
 
         yield return new TestCaseData($"""
             {YamlHeader}
             {SchemeDefinintion}
                   type: http
-            """)
-            .SetArgDisplayNames("Http without 'scheme'");
+            """,
+            "scheme")
+            .SetArgDisplayNames("Http", "scheme");
 
         yield return new TestCaseData($"""
             {YamlHeader}
             {SchemeDefinintion}
                   type: httpApiKey
                   name: '123'
-            """)
-            .SetArgDisplayNames("HttpApiKey without 'in'");
+            """,
+            "in")
+            .SetArgDisplayNames("HttpApiKey", "in");
 
         yield return new TestCaseData($"""
             {YamlHeader}
             {SchemeDefinintion}
                   type: httpApiKey
                   in: cookie
-            """)
-            .SetArgDisplayNames("HttpApiKey without 'name'");
+            """,
+            "name")
+            .SetArgDisplayNames("HttpApiKey", "name");
 
         yield return new TestCaseData($"""
             {YamlHeader}
             {SchemeDefinintion}
                   type: oauth2
-            """)
-            .SetArgDisplayNames("OAuth2 without 'flows'");
+            """,
+            "flows")
+            .SetArgDisplayNames("OAuth2", "flows");
 
         yield return new TestCaseData($"""
             {YamlHeader}
             {SchemeDefinintion}
                   type: openIdConnect
-            """)
-            .SetArgDisplayNames("OpenIdConnect without 'openIdConnectUrl'");
+            """,
+            "openIdConnectUrl")
+            .SetArgDisplayNames("OpenIdConnect", "openIdConnectUrl");
     }
 
     private static IEnumerable<TestCaseData> GetReadPropertiesCases()

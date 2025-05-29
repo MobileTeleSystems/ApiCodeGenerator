@@ -46,7 +46,7 @@ public class CSharpOperationModel
 
     public bool HasDescription { get; }
 
-    public bool HasPublish => Operation.Action == OperationAction.Send;
+    public bool HasSend => Operation.Action == OperationAction.Send;
 
     public string OperationName { get; }
 

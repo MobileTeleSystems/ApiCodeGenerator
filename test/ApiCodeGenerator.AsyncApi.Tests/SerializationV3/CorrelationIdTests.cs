@@ -19,7 +19,7 @@ public class CorrelationIdTests : TestBase
                   description: ''
             """;
 
-        RequiredPropertiesTest(yaml);
+        RequiredPropertiesTest(yaml, "location");
     }
 
     [Test]

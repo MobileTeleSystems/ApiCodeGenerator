@@ -3,8 +3,8 @@ namespace ApiCodeGenerator.AsyncApi.DOM;
 public enum OperationAction
 {
     /// <summary>Send message.</summary>
-    Send,
+    Send = 1,
 
     /// <summary>Receive message.</summary>
-    Receive,
+    Receive = 2,
 }

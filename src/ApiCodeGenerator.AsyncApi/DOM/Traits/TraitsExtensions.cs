@@ -8,13 +8,17 @@ public static class TraitsExtensions
         where TEntity : class, ITraitsAware<TEntity, TTraits>, new()
         where TTraits : Traits<TTraits, TEntity>
     {
-        var traits = entity.Traits?.ActualObject;
+        var traits = entity.Traits;
         if (traits is not null)
         {
             var version = ((IDocumentAware)traits).Document?.AsyncApi ?? "3.0.0";
             var overwrite = version.StartsWith("2.");
             var target = new TEntity();
-            traits.ApplyTo(target, overwrite);
+            foreach (var t in traits)
+            {
+                t.ActualObject.ApplyTo(target, overwrite);
+            }
+
             return target;
         }
         else

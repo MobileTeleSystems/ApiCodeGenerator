@@ -70,7 +70,7 @@ internal sealed class AsyncApiReferenceUpdater : AsyncJsonReferenceVisitorBase
             var targetType = reference.GetType();
             var target = await _referenceResolver
                 .ResolveReferenceAsync(_rootObject, reference.ReferencePath, targetType, _contractResolver, cancellationToken);
-            return target;
+            reference.Reference = target;
         }
 
         return reference;

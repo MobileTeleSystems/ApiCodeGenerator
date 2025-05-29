@@ -23,13 +23,15 @@ public class OpertationTests : TestBase
             op1:
               action: send
         """,
-        TestName = nameof(RequiredProperties) + "- without channel")]
-    [TestCase(
+        "channel",
+        TestName = $"{nameof(RequiredProperties)}(channel)")]
+    [TestCase(YamlHeader +
         OperationDefinition,
-        TestName = nameof(RequiredProperties) + "- without action")]
-    public void RequiredProperties(string yaml)
+        "action",
+        TestName = $"{nameof(RequiredProperties)}(action)")]
+    public void RequiredProperties(string yaml, string propName)
     {
-        RequiredPropertiesTest(yaml);
+        RequiredPropertiesTest(yaml, propName);
     }
 
     [Test]
@@ -60,7 +62,7 @@ public class OpertationTests : TestBase
             Tags = new[] { new { Name = "tag" } },
             ExternalDocs = new { Url = "url" },
             Bindings = new { Amqp = new object() },
-            Traits = new { Title = "abf76138-4a3b-43d6-b4b6-488a4e7a69e6" },
+            Traits = new[] { new { Title = "abf76138-4a3b-43d6-b4b6-488a4e7a69e6" } },
             Messages = new object[0],
             Reply = new { Address = new { Location = "e6c1c3d4-691e-476d-ba69-65be200066f9" } },
         };
@@ -176,13 +178,13 @@ public class OpertationTests : TestBase
         {OperationDefinition}
               action: send
               traits:
-               $ref: '{refPath}'
+              - $ref: '{refPath}'
           operationTraits:
             t:
               {expected.ToYaml(indent: 6)}
         """;
 
-        await OperationResolveReferenceTest(yaml, refPath, expected, o => o.Traits);
+        await OperationResolveReferenceTest(yaml, refPath, expected, o => o.Traits?.Single());
     }
 
     [Test]

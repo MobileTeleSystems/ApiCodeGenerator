@@ -14,7 +14,7 @@
     /// </summary>
   {%- endif -%}
   {%- capture parametersText %} {%- template Client.Operation.Parameters -%} {% endcapture -%}
-  {%- if operation.HasPublish -%}
+  {%- if operation.HasSend -%}
     public Task {{operation.OperationName}}({{parametersText}}, {{operation.PayloadType}} payload);
   {%-  else -%}
     public void {{operation.OperationName}}({{parametersText}}, Action<{{operation.PayloadType}}> callback);

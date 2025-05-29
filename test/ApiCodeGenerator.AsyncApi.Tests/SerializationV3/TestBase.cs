@@ -14,11 +14,11 @@ public abstract class TestBase
 
     """;
 
-    protected void RequiredPropertiesTest(string yaml)
+    protected void RequiredPropertiesTest(string yaml, string propName)
     {
-        var ex = Assert.ThrowsAsync<JsonSerializationException>(() => AsyncApiSerializer.FromYamlAsync(yaml));
+        var ex = Assert.ThrowsAsync<AsyncApiSerializationException>(() => AsyncApiSerializer.FromYamlAsync(yaml));
         Assert.That(ex, Is.Not.Null);
-        Assert.That(ex.Message, Does.StartWith("Required property "));
+        Assert.That(ex.Message, Does.StartWith($"Json parsing failed. Required property '{propName}'"));
     }
 
     protected async Task ReadExtensionsTest(string yaml, string value, Func<AsyncApiDocument, object?> getter)
@@ -40,7 +40,11 @@ public abstract class TestBase
         Assert.That(extObj.ExtensionData[propName], Is.EqualTo(value));
     }
 
-    protected async Task ReadPropertiesTest(string yaml, object expected, Func<AsyncApiDocument, object?> getter)
+    protected async Task ReadPropertiesTest(
+        string yaml,
+        object expected,
+        Func<AsyncApiDocument, object?> getter,
+        DeepEqual.IComparison? comparison = null)
     {
         var document = await AsyncApiSerializer.FromYamlAsync(yaml);
 
@@ -52,7 +56,7 @@ public abstract class TestBase
             obj = jr.ActualObject;
         }
 
-        obj.ShouldDeepEqual(expected, IgnoreUnmatchedProperties);
+        obj.ShouldDeepEqual(expected, comparison ?? IgnoreUnmatchedProperties);
     }
 
     protected async Task ResolveReferernceTest<T>(string yaml, string refPath, object expected, Func<AsyncApiDocument, T?> getRef)

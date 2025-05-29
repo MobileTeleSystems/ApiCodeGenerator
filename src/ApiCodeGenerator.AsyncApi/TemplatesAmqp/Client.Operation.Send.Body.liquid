@@ -3,9 +3,9 @@
 {% endcomment -%}
 
 var exchange = "{{operation.ExchangeName}}";
-var routingKey = "{{operation.ChannelName}}";
+var routingKey = "{{operation.ChannelAddress}}";
 
-var channel = _channelPool.GetChannel("{{operation.OperationId}}");
+var channel = _channelPool.GetChannel("{{operation.OperationName}}");
 var exchangeProps = new Dictionary<string, object>
 {
 {%- if operation.HasCc -%}
@@ -33,7 +33,7 @@ channel.ExchangeDeclare(
 
 var props = channel.CreateBasicProperties();
 
-props.CorrelationId = "{{operation.OperationId}}_{{operation.ChannelName}}";
+props.CorrelationId = "{{operation.OperationName}}_{{operation.ChannelAddress}}";
 {%- if operation.ReplyTo != '' -%}
 props.ReplyTo = "{{operation.ReplyTo}}";
 {% endif -%}

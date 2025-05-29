@@ -32,7 +32,10 @@ internal sealed class NamedReferenceDictionary<T> : IDictionary<string, NamedRef
         set
         {
             _dictionary[key] = value;
-            value.ObjectId = key;
+            if (value != null)
+            {
+                value.ObjectId = key;
+            }
         }
     }
 

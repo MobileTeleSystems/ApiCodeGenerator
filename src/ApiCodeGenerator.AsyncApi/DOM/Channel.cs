@@ -31,7 +31,7 @@ public class Channel : ExtensionRefObject
 
     /// <summary>A map of the parameters included in the channel address. </summary>
     [JsonProperty("parameters")]
-    public IDictionary<string, NamedReference<Parameter>>? Parameters { get; } = new Internal.NamedReferenceDictionary<Parameter>();
+    public IDictionary<string, NamedReference<Parameter>> Parameters { get; } = new Internal.NamedReferenceDictionary<Parameter>();
 
     /// <summary>A list of tags for logical grouping of channels.</summary>
     [JsonProperty("tags")]

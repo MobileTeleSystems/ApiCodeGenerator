@@ -7,5 +7,5 @@ public interface ITraitsAware<TEntity, TTraits>
     where TTraits : Traits<TTraits, TEntity>
 {
     [JsonProperty("traits")]
-    public Reference<TTraits>? Traits { get; set; }
+    public ICollection<Reference<TTraits>>? Traits { get; set; }
 }

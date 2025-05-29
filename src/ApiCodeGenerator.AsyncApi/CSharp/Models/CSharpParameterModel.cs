@@ -15,4 +15,6 @@ public class CSharpParameterModel
     }
 
     public string CamelCaseParameterName => ConversionUtilities.ConvertToLowerCamelCase(_parameterName, true);
+
+    public virtual string ParameterType => "string";
 }

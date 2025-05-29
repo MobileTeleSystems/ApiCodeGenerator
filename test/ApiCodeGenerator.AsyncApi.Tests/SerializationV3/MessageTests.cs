@@ -30,7 +30,7 @@ public class MessageTests : TestBase
             ExternalDocs = new { Url = "039a707a-85c5-474e-bfe8-be156f813e8f" },
             Bindings = new { Amqp = new object() },
             Examples = new[] { new { Name = "59d53925-c20f-4cda-b819-ea9b28af10fc" } },
-            Traits = new { Title = "11690732-96c8-498c-9f9f-b54d5278f118" },
+            Traits = new[] { new { Title = "11690732-96c8-498c-9f9f-b54d5278f118" } },
         };
 
         var yaml = $"""
@@ -167,13 +167,13 @@ public class MessageTests : TestBase
         {YamlHeader}
         {MessageDefinition}
               traits:
-               $ref: '{refPath}'
+              - $ref: '{refPath}'
           messageTraits:
             t:
               {expected.ToYaml(indent: 6)}
         """;
 
-        await MessageResolveReferernceTest(yaml, refPath, expected, o => o.Traits);
+        await MessageResolveReferernceTest(yaml, refPath, expected, o => o.Traits?.Single());
     }
 
     private Task MessageResolveReferernceTest<T>(string yaml, string refPath, object expected, Func<Message, T?> getRef)

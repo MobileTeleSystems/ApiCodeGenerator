@@ -1,10 +1,9 @@
 using ApiCodeGenerator.AsyncApi.DOM.Traits;
 using Newtonsoft.Json;
-using NJsonSchema;
 
 namespace ApiCodeGenerator.AsyncApi.DOM;
 
-public class Components : JsonExtensionObject
+public class Components
 {
     [JsonProperty("messages")]
     public IDictionary<string, Reference<Message>>? Messages { get; set; }
@@ -62,4 +61,7 @@ public class Components : JsonExtensionObject
 
     [JsonProperty("messageBindings")]
     public IDictionary<string, Reference<MessageBindings>>? MessageBindings { get; set; }
+
+    [JsonExtensionData]
+    public IDictionary<string, object?>? ExtensionData { get; set; }
 }

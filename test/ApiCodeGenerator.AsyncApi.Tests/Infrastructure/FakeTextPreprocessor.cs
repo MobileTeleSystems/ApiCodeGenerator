@@ -18,6 +18,11 @@ namespace ApiCodeGenerator.AsyncApi.Tests.Infrastructure
             Invocactions.Add(new(Settings, true, [data, fileName]));
             return """
             {
+                "asyncapi":"3.0.0",
+                "info":{
+                    "title": "",
+                    "version": "1.0"
+                },
                 "components":{
                     "schemas":{
                         "schemaName":{

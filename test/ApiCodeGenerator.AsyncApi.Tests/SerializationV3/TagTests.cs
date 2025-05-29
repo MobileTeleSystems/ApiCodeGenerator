@@ -17,7 +17,7 @@ public class TagTests : TestBase
             {TagDefinition}
                   description: ''
             """;
-        RequiredPropertiesTest(yaml);
+        RequiredPropertiesTest(yaml, "name");
     }
 
     [Test]

@@ -3,9 +3,9 @@
 {% endcomment -%}
 
 var queue = "{{operation.QueueName}}"; // queue from specification
-var channel = _channelPool.GetChannel("{{operation.OperationId}}");
+var channel = _channelPool.GetChannel("{{operation.OperationName}}");
 var exchange = "{{operation.ExchangeName}}";
-var routingKey = "{{operation.ChannelName}}";
+var routingKey = "{{operation.ChannelAddress}}";
 
 // TODO: declare passive?
 channel.QueueDeclare(queue);

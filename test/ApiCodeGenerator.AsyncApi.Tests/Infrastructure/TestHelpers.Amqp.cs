@@ -7,7 +7,7 @@ internal static partial class TestHelpers
     public static string GetExpectedAmqpServiceCode(string className, int identCnt)
         => GetExpectedAmqpServiceCode(className, identCnt, [
                 GetExpectedSummary("Inform about environmental lighting conditions of a particular streetlight.", identCnt + 4) +
-                GetExpectedAmqpPublisherCode("ReceiveLightMeasurement", "LightMeasuredPayload", identCnt + 4)
+                GetExpectedAmqpReceiverCode("ReceiveLightMeasurement", "LightMeasuredPayload", identCnt + 4)
            ]);
 
     public static string GetExpectedAmqpServiceCode(string className, int identCnt, params string[] operationsCode)
@@ -44,7 +44,7 @@ internal static partial class TestHelpers
         ident + "}\n";
     }
 
-    public static string GetExpectedAmqpPublisherCode(
+    public static string GetExpectedAmqpSenderCode(
         string name,
         string payloadType,
         int identCnt,
@@ -53,9 +53,9 @@ internal static partial class TestHelpers
     {
         string[] body = [
            $"var exchange = \"{exchange?.Name}\";",
-            "var routingKey = \"smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured\";",
+            "var routingKey = \"smartylighting.streetlights.1.0.action.{streetlightId}.dim\";",
             string.Empty,
-            "var channel = _channelPool.GetChannel(\"receiveLightMeasurement\");",
+           $"var channel = _channelPool.GetChannel(\"{name}\");",
             "var exchangeProps = new Dictionary<string, object>",
             "{",
             .. GetExchangeProps(operationBinding),
@@ -70,7 +70,7 @@ internal static partial class TestHelpers
             string.Empty,
             "var props = channel.CreateBasicProperties();",
             string.Empty,
-            "props.CorrelationId = \"receiveLightMeasurement_smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured\";",
+           $"props.CorrelationId = \"{name}_smartylighting.streetlights.1.0.action.{{streetlightId}}.dim\";",
            $"props.DeliveryMode = {((int?)operationBinding?.DeliveryMode) ?? 1};",
            $"props.Priority = {operationBinding?.Priority ?? 0};",
            $"props.Expiration = \"{operationBinding?.Expiration ?? 1000}\";",
@@ -87,7 +87,7 @@ internal static partial class TestHelpers
             string.Empty,
             "return Task.CompletedTask;",
         ];
-        return GetExpectedPublisherCode(name, payloadType, identCnt, body);
+        return GetExpectedSenderCode(name, payloadType, identCnt, body);
 
         static IEnumerable<string> GetExchangeProps(OperationBase? operationBinding)
         {
@@ -116,7 +116,7 @@ internal static partial class TestHelpers
         }
     }
 
-    public static string GetExpectedAmqpSubscriberCode(
+    public static string GetExpectedAmqpReceiverCode(
         string name,
         string payloadType,
         int identCnt,
@@ -124,9 +124,9 @@ internal static partial class TestHelpers
     {
         string[] body = [
            $"var queue = \"{channelBinding?.Queue.Name}\"; // queue from specification",
-            "var channel = _channelPool.GetChannel(\"dimLight\");",
+           $"var channel = _channelPool.GetChannel(\"{name}\");",
            $"var exchange = \"{channelBinding?.Exchange.Name}\";",
-            "var routingKey = \"smartylighting.streetlights.1.0.action.{streetlightId}.dim\";",
+            "var routingKey = \"smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured\";",
             string.Empty,
             "// TODO: declare passive?",
             "channel.QueueDeclare(queue);",
@@ -162,10 +162,10 @@ internal static partial class TestHelpers
             "    consumer: consumer);",
         ];
 
-        return GetExpectedSubscriberCode(name, payloadType, identCnt, body);
+        return GetExpectedReceiverCode(name, payloadType, identCnt, body);
     }
 
-    public static string GetExpectedPoolCode(string className, int identCnt)
+    public static string GetExpectedPoolCode(string className, int identCnt, params DOM.Channel[] channels)
     {
         var ident = new string(' ', identCnt);
         return
@@ -269,16 +269,18 @@ internal static partial class TestHelpers
 
         IEnumerable<string> GetChannelDeclarations()
         {
-            // foreach (var channel in channels)
-            // {
-            //     var code = (channel.Publish ?? channel.Subscribe)?.OperationId switch
-            //     {
-            //         "receiveLightMeasurement" => "_channels.Add(\"receiveLightMeasurement\", CreateChannel(connection));",
-            //         "dimLight" => GetSubscriberChannelDeclaration(channel, "dimLight"),
-            //         _ => throw new InvalidOperationException("Unknown operationId"),
-            //     };
-            //     yield return $"{ident}        {code}\n";
-            // }
+            foreach (var channel in channels)
+            {
+                var code = channel.Address switch
+                {
+                    "smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured"
+                        => GetSubscriberChannelDeclaration(channel, "ReceiveLightMeasurement"),
+                    "smartylighting.streetlights.1.0.action.{streetlightId}.dim"
+                        => "_channels.Add(\"DimLight\", CreateChannel(connection));",
+                    _ => throw new InvalidOperationException("Unknown operationId"),
+                };
+                yield return $"{ident}        {code}\n";
+            }
             yield break;
         }
 

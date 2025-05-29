@@ -9,5 +9,12 @@ public sealed class NamedReference<T> : Reference<T>
     {
     }
 
+    private NamedReference(T actualObject)
+        : base(actualObject)
+    {
+    }
+
     public string? ObjectId { get; internal set; }
+
+    public static implicit operator NamedReference<T>(T actualObj) => new NamedReference<T>(actualObj);
 }

@@ -17,7 +17,7 @@ public class ExternalDocumentationTests : TestBase
             {ExternalDocDefinition}
                   description: ''
             """;
-        RequiredPropertiesTest(yaml);
+        RequiredPropertiesTest(yaml, "url");
     }
 
     [Test]

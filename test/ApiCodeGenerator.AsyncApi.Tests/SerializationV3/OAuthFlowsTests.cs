@@ -71,7 +71,7 @@ public class OAuthFlowsTests : TestBase
     }
 
     [TestCaseSource(nameof(GetRequiredPropertiesCases))]
-    public void RequiredProperties(object expected)
+    public void RequiredProperties(object expected, string propName)
     {
         var yaml = $"""
             {YamlHeader}
@@ -79,7 +79,7 @@ public class OAuthFlowsTests : TestBase
                     {expected.ToYaml(indent: 8)}
             """;
 
-        RequiredPropertiesTest(yaml);
+        RequiredPropertiesTest(yaml, propName);
     }
 
     private static IEnumerable<TestCaseData> GetRequiredPropertiesCases()
@@ -95,8 +95,9 @@ public class OAuthFlowsTests : TestBase
                 {
                     AuthorizationUrl = "992741d0-0e5b-4e48-b8f9-f05b7732e431",
                 },
-            })
-            .SetArgDisplayNames("implicit: without availableScopes");
+            },
+            "availableScopes")
+            .SetArgDisplayNames("type: implicit", "availableScopes");
 
         yield return new TestCaseData(
             new
@@ -105,8 +106,9 @@ public class OAuthFlowsTests : TestBase
                 {
                     AvailableScopes,
                 },
-            })
-            .SetArgDisplayNames("implicit: without authorizationUrl");
+            },
+            "authorizationUrl")
+            .SetArgDisplayNames("type: implicit", "authorizationUrl");
 
         yield return new TestCaseData(
             new
@@ -115,8 +117,9 @@ public class OAuthFlowsTests : TestBase
                 {
                     TokenUrl = "ea73d2a8-968e-4de8-a5c4-c50d1b27343f",
                 },
-            })
-            .SetArgDisplayNames("password: without availableScopes");
+            },
+            "availableScopes")
+            .SetArgDisplayNames("type: password", "availableScopes");
 
         yield return new TestCaseData(
             new
@@ -125,8 +128,9 @@ public class OAuthFlowsTests : TestBase
                 {
                     AvailableScopes,
                 },
-            })
-            .SetArgDisplayNames("password: without tokenUrl");
+            },
+            "tokenUrl")
+            .SetArgDisplayNames("type: password", "tokenUrl");
 
         yield return new TestCaseData(
             new
@@ -135,8 +139,9 @@ public class OAuthFlowsTests : TestBase
                 {
                     TokenUrl = "ea73d2a8-968e-4de8-a5c4-c50d1b27343f",
                 },
-            })
-            .SetArgDisplayNames("clientCredentials: without availableScopes");
+            },
+            "availableScopes")
+            .SetArgDisplayNames("type: clientCredentials");
 
         yield return new TestCaseData(
             new
@@ -145,8 +150,9 @@ public class OAuthFlowsTests : TestBase
                 {
                     AvailableScopes,
                 },
-            })
-            .SetArgDisplayNames("clientCredentials: without tokenUrl");
+            },
+            "tokenUrl")
+            .SetArgDisplayNames("type: clientCredentials", "tokenUrl");
 
         yield return new TestCaseData(
             new
@@ -156,8 +162,9 @@ public class OAuthFlowsTests : TestBase
                     TokenUrl = "69071823-16c5-476a-b9bb-1bcb4926ad38",
                     AuthorizationUrl = "cd147b08-42d3-480b-a9ea-9167e9dc8aef",
                 },
-            })
-            .SetArgDisplayNames("authorizationCode: without availableScopes");
+            },
+            "availableScopes")
+            .SetArgDisplayNames("type: authorizationCode", "availableScopes");
 
         yield return new TestCaseData(
             new
@@ -167,8 +174,9 @@ public class OAuthFlowsTests : TestBase
                     AvailableScopes,
                     AuthorizationUrl = "88cfe0a6-8ed3-4d59-a405-76a708899cb1",
                 },
-            })
-            .SetArgDisplayNames("authorizationCode: without tokenUrl");
+            },
+            "tokenUrl")
+            .SetArgDisplayNames("type: authorizationCode", "tokenUrl");
 
         yield return new TestCaseData(
             new
@@ -178,8 +186,9 @@ public class OAuthFlowsTests : TestBase
                     TokenUrl = "d88c1bd8-ea04-40d6-9add-b1a345a4d6ae",
                     AvailableScopes,
                 },
-            })
-            .SetArgDisplayNames("authorizationCode: without authorizationurl");
+            },
+            "authorizationUrl")
+            .SetArgDisplayNames("type: authorizationCode", "authorizationUrl");
     }
 
     private static OAuthFlows GetOAuthFlows(AsyncApiDocument document)

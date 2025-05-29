@@ -5,12 +5,6 @@ namespace ApiCodeGenerator.AsyncApi.DOM.Serialization;
 
 internal class AsyncApiSchemaConverter : JsonConverter
 {
-    public const string AsyncApi = "application/vnd.aai.asyncapi";
-    public const string AsyncApi3 = AsyncApi + ";version=3.0.0";
-    public const string JsonSchema07 = "application/schema+json;version=draft-07";
-    public const string JsonSchema07Yaml = "application/schema+yaml;version=draft-07";
-    public const string OpenApi = "application/vnd.oai.openapi";
-
     public override bool CanWrite => false;
 
     public override bool CanConvert(Type objectType) => objectType == typeof(AsyncApiSchema);
@@ -18,7 +12,7 @@ internal class AsyncApiSchemaConverter : JsonConverter
     public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
         var jobj = (JObject)JToken.ReadFrom(reader);
-        var format = AsyncApi3;
+        var format = AsyncApiSchema.AsyncApi3;
         JToken schemaDefinition = jobj;
         if (jobj.Property("schemaFormat") != null)
         {
@@ -39,14 +33,14 @@ internal class AsyncApiSchemaConverter : JsonConverter
     }
 
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
-        => throw new NotImplementedException();
+        => throw new NotSupportedException();
 
     private AsyncApiSchema DeserializeSchema(string format, JToken schemaDefinition, JsonSerializer serializer)
     {
-        if (format.StartsWith(AsyncApi)
-          || format.StartsWith(OpenApi)
-          || format == JsonSchema07
-          || format == JsonSchema07Yaml)
+        if (format.StartsWith(AsyncApiSchema.AsyncApi)
+          || format.StartsWith(AsyncApiSchema.OpenApi)
+          || format == AsyncApiSchema.JsonSchema07
+          || format == AsyncApiSchema.JsonSchema07Yaml)
         {
             var aaSchema = new AsyncApiSchema { SchemaFormat = format };
             serializer.Populate(schemaDefinition.CreateReader(), aaSchema);

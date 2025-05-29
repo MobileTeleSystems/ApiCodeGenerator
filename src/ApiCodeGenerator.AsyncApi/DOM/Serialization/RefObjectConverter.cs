@@ -13,6 +13,11 @@ internal class RefObjectConverter : JsonConverter
 
     public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
+        if (reader.TokenType == JsonToken.Null)
+        {
+            return null;
+        }
+
         reader.Read();
         var refObj = (IJsonReference)Activator.CreateInstance(objectType);
         if (reader.TokenType == JsonToken.PropertyName
@@ -32,7 +37,7 @@ internal class RefObjectConverter : JsonConverter
         return refObj;
     }
 
-    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) => throw new NotImplementedException();
+    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) => throw new NotSupportedException();
 
     // Special reader. Wraps original reader and emulate state before call 'Read' in converter
     private sealed class CustomJsonReader : JsonReader

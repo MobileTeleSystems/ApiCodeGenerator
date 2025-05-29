@@ -22,7 +22,7 @@ public class AmqpFunctionalTests
                 Namespace = ns,
                 GenerateDataAnnotations = false,
             },
-            OperationTypes = OperationTypes.Publish,
+            OperationTypes = OperationTypes.Receive,
         };
 
         var context = new GeneratorContext((t, s, v) => settings, new Core.ExtensionManager.Extensions(), new Dictionary<string, string>())
@@ -31,6 +31,10 @@ public class AmqpFunctionalTests
         };
 
         var generator = await CSharpAmqpContentGenerator.CreateAsync(context);
+        var channel = new DOM.Channel
+        {
+            Address = "smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured",
+        };
 
         // Act
         var code = generator.Generate();
@@ -38,7 +42,7 @@ public class AmqpFunctionalTests
         // Assert
         var expectedCode = GetExpectedCode(
             GetExpectedAmqpServiceCode(className, identCnt: 4) + "\n" +
-                GetExpectedPoolCode(className, identCnt: 4) + "\n",
+                GetExpectedPoolCode(className, identCnt: 4, channel) + "\n",
             GetExpectedDtoCode(),
             ns,
             GetAmqpUsings() + "\n");
@@ -47,7 +51,7 @@ public class AmqpFunctionalTests
     }
 
     [Test]
-    public async Task Generate_ChannelBindingPublisher()
+    public async Task Generate_ChannelBindingReceiver()
     {
         const string ns = "MyNS";
         const string className = "LightinService";
@@ -60,7 +64,7 @@ public class AmqpFunctionalTests
                 Namespace = ns,
                 GenerateDataAnnotations = false,
             },
-            OperationTypes = OperationTypes.Publish,
+            OperationTypes = OperationTypes.Receive,
         };
         var channelBinding = new ChannelBindings
         {
@@ -100,13 +104,15 @@ public class AmqpFunctionalTests
         var code = generator.Generate();
 
         // Assert
+        var document = GetDocument(generator);
+        var channel = document.Channels!.Values.First();
         string[] expectedPublisherCode = [
                 GetExpectedSummary("Inform about environmental lighting conditions of a particular streetlight.", 8) +
-                  GetExpectedAmqpPublisherCode("ReceiveLightMeasurement", "LightMeasuredPayload", identCnt: 8, channelBinding.Amqp?.Exchange)
+                  GetExpectedAmqpReceiverCode("ReceiveLightMeasurement", "LightMeasuredPayload", identCnt: 8, channelBinding.Amqp)
             ];
         var expectedCode = GetExpectedCode(
             GetExpectedAmqpServiceCode(className, identCnt: 4, expectedPublisherCode) + "\n" +
-                GetExpectedPoolCode(className, identCnt: 4) + "\n",
+                GetExpectedPoolCode(className, identCnt: 4, channel) + "\n",
             GetExpectedDtoCode(),
             ns,
             GetAmqpUsings() + "\n");
@@ -115,7 +121,7 @@ public class AmqpFunctionalTests
     }
 
     [Test]
-    public async Task Generate_ChannelBindingSubscriber()
+    public async Task Generate_ChannelBindingSender()
     {
         const string ns = "MyNS";
         const string className = "LightinService";
@@ -128,7 +134,7 @@ public class AmqpFunctionalTests
                 Namespace = ns,
                 GenerateDataAnnotations = false,
             },
-            OperationTypes = OperationTypes.Subscribe,
+            OperationTypes = OperationTypes.Send,
         };
         var channelBinding = new ChannelBindings
         {
@@ -174,11 +180,11 @@ public class AmqpFunctionalTests
         var document = GetDocument(generator);
         var channel = document.Channels!.Values.First();
         string[] expectedSubscriberCode = [
-                GetExpectedAmqpSubscriberCode("DimLight", "DimLightPayload", identCnt: 8, channelBinding.Amqp)
+                GetExpectedAmqpSenderCode("DimLight", "DimLightPayload", identCnt: 8, channelBinding.Amqp.Exchange)
             ];
         var expectedCode = GetExpectedCode(
             GetExpectedAmqpServiceCode(className, identCnt: 4, expectedSubscriberCode) + "\n" +
-                GetExpectedPoolCode(className, identCnt: 4) + "\n",
+                GetExpectedPoolCode(className, identCnt: 4, channel) + "\n",
             GetExpectedDtoCode(),
             ns,
             GetAmqpUsings() + "\n");
@@ -200,7 +206,7 @@ public class AmqpFunctionalTests
                 Namespace = ns,
                 GenerateDataAnnotations = false,
             },
-            OperationTypes = OperationTypes.Publish,
+            OperationTypes = OperationTypes.Send,
         };
 
         var operationBinding = new OperationV0_3
@@ -216,8 +222,10 @@ public class AmqpFunctionalTests
 
         var documentReader = await LoadApiDocumentAsync("asyncapi.json");
         var json = JToken.ReadFrom(new JsonTextReader(documentReader));
-        var channelJson = ((JProperty)json["channels"]!.First!).Value;
-        channelJson["publish"]!["bindings"] = JObject.FromObject(new OperationBindings { Amqp = operationBinding });
+        var channelProperty = (JProperty)json["channels"]!.Last!;
+        var channelJson = channelProperty.Value;
+        channelJson["subscribe"]!["bindings"] = JObject.FromObject(new OperationBindings { Amqp = operationBinding });
+        json["channels"] = new JObject { channelProperty }; // for test use only last channel
 
         var context = new GeneratorContext((t, s, v) => settings, new Core.ExtensionManager.Extensions(), new Dictionary<string, string>())
         {
@@ -230,13 +238,14 @@ public class AmqpFunctionalTests
         var code = generator.Generate();
 
         // Assert
+        var document = GetDocument(generator);
+        var channel = document.Channels!.Values.First();
         string[] expectedPublisherCode = [
-                GetExpectedSummary("Inform about environmental lighting conditions of a particular streetlight.", 8) +
-                  GetExpectedAmqpPublisherCode("ReceiveLightMeasurement", "LightMeasuredPayload", identCnt: 8, operationBinding: operationBinding)
+                GetExpectedAmqpSenderCode("DimLight", "DimLightPayload", identCnt: 8, operationBinding: operationBinding)
             ];
         var expectedCode = GetExpectedCode(
             GetExpectedAmqpServiceCode(className, identCnt: 4, expectedPublisherCode) + "\n" +
-                GetExpectedPoolCode(className, identCnt: 4) + "\n",
+                GetExpectedPoolCode(className, identCnt: 4, channel) + "\n",
             GetExpectedDtoCode(),
             ns,
             GetAmqpUsings() + "\n");

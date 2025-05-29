@@ -90,7 +90,10 @@ namespace ApiCodeGenerator.AsyncApi.CSharp
         {
             foreach (var operation in Document.Operations)
             {
-                yield return CreateOperationModelInternal(operation.Value);
+                if (Settings.OperationTypes.HasFlag((OperationTypes)(int)operation.Value.ActualObject.Action))
+                {
+                    yield return CreateOperationModelInternal(operation.Value);
+                }
             }
         }
 

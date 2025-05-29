@@ -63,7 +63,12 @@ namespace ApiCodeGenerator.AsyncApi.DOM.Serialization
 
             if (discriminatorValue is null)
             {
-                throw new JsonSerializationException($"Required property '{_discriminator}' not found in JSON. Path '{reader.Path}'.");
+                throw new JsonSerializationException($"Required property '{discriminatorProperty.PropertyName}' not found in JSON. Path '{reader.Path}'.");
+            }
+
+            if (!discriminatorProperty.Writable && discriminatorProperty.PropertyName is not null)
+            {
+                jobj.Remove(discriminatorProperty.PropertyName);
             }
 
             if (_factories.TryGetValue(discriminatorValue, out var factory)
