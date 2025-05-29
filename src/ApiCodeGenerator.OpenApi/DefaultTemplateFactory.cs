@@ -22,38 +22,33 @@ namespace ApiCodeGenerator.OpenApi;
 public partial class DefaultTemplateFactory : ITemplateFactory
 {
     private const string BASE_TMPL_SUFFIX = ".base";
-
+    private readonly CodeGeneratorSettingsBase _settings;
     private readonly ITemplateProvider[] _providers;
 
     private readonly InternalTemplateFactory _internalTemplateFactory;
 
     public DefaultTemplateFactory(CodeGeneratorSettingsBase settings, params Assembly[] assemblies)
-        : this(settings, CreateProviders(settings, assemblies).ToArray())
+        : this(settings, CreateProviders(assemblies).ToArray())
     {
     }
 
     public DefaultTemplateFactory(CodeGeneratorSettingsBase settings, ITemplateProvider[] providers)
     {
+        _settings = settings;
         _providers = providers;
         _internalTemplateFactory = new(settings, GetLiquidTemplate, GetToolchainVersion);
     }
 
+    [Obsolete("Use CreateProviders(Assembly[] assemblies)")]
     public static IEnumerable<ITemplateProvider> CreateProviders(CodeGeneratorSettingsBase settings, Assembly[] assemblies)
-    {
-        if (!string.IsNullOrEmpty(settings.TemplateDirectory))
-        {
-            yield return new DirectoryTemplateProvider(settings.TemplateDirectory!);
-        }
+        => CreateProviders(assemblies);
 
-        foreach (var assembly in assemblies)
-        {
-            yield return new EmbededResourceTemplateProvider(assembly, $"{assembly.GetName().Name}.Templates");
-        }
-    }
+    public static IEnumerable<ITemplateProvider> CreateProviders(Assembly[] assemblies)
+        => assemblies.Select(a => new EmbededResourceTemplateProvider(a, $"{a.GetName().Name}.Templates"));
 
     public ITemplate CreateTemplate(string language, string template, object model)
     {
-        IEnumerable<ITemplateProvider> providers = _providers;
+        IEnumerable<ITemplateProvider> providers = GetProviders();
         if (template.EndsWith(BASE_TMPL_SUFFIX))
         {
             if (model is Fluid.TemplateContext templateContext)
@@ -78,11 +73,22 @@ public partial class DefaultTemplateFactory : ITemplateFactory
 
     private string GetLiquidTemplate(string language, string name)
     {
-        var text = _providers
+        var text = GetProviders()
             .Select(p => p.GetTemplateText(name.TrimEnd('!'), language))
             .FirstOrDefault(t => t is not null);
 
         return text ?? string.Empty;
+    }
+
+    private IEnumerable<ITemplateProvider> GetProviders()
+    {
+        var providers = _providers.AsEnumerable();
+        if (!string.IsNullOrEmpty(_settings.TemplateDirectory))
+        {
+            providers = providers.Prepend(new DirectoryTemplateProvider(_settings.TemplateDirectory!));
+        }
+
+        return providers;
     }
 
     private sealed class InternalTemplateFactory
