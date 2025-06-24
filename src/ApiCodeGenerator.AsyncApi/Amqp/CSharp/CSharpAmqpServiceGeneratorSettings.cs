@@ -11,7 +11,7 @@ public class CSharpAmqpServiceGeneratorSettings : CSharpClientGeneratorSettings
             CodeGeneratorSettings,
             [
                 new EmbededResourceTemplateProvider(GetType().Assembly, $"{asmName}.TemplatesAmqp"),
-                .. DefaultTemplateFactory.CreateProviders(CodeGeneratorSettings,
+                .. DefaultTemplateFactory.CreateProviders(
                 [
                     typeof(CSharpClientGeneratorSettings).Assembly,
                     typeof(NJsonSchema.CodeGeneration.CSharp.CSharpGenerator).Assembly

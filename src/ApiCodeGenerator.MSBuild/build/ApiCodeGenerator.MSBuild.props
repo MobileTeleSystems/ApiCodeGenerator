@@ -29,7 +29,7 @@
     <_Temporary Include="**/*.nswag" Exclude="%(OpenApiReference.Options)">
       <DocumentDir>$(ProjectDir)%(RecursiveDir)</DocumentDir>
     </_Temporary>
-    <_Temporary Update="@(_Temporary)" Condition="'$(AcgApiDocumentDir)' == 'true'">
+    <_Temporary Update="@(_Temporary)" Condition="'$(AcgApiDocumentDir)' != ''">
       <DocumentDir>$([MSBuild]::EnsureTrailingSlash('$(AcgApiDocumentDir)'))</DocumentDir>
     </_Temporary>
 

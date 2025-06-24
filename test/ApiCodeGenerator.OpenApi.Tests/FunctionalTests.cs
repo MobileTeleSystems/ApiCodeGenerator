@@ -129,7 +129,18 @@ namespace ApiCodeGenerator.OpenApi.Tests
             Assert.That(actual, Does.Contain(expectedClientDeclartion));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1204:Static elements should appear before instance elements", Justification = "After tests")]
+        [TestCaseSource(nameof(TemplateDirectorySource))]
+        public void TemplateDirectory<T>(T settings)
+            where T : CSharpGeneratorBaseSettings
+        {
+            settings.CodeGeneratorSettings.TemplateDirectory = "Templates";
+            var template = settings.CodeGeneratorSettings.TemplateFactory.CreateTemplate("CSharp", "File", new());
+            var actual = template.Render();
+
+            Assert.That(actual, Is.EqualTo("overrided"));
+        }
+
+        [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1204:Static elements should appear before instance elements", Justification = "After tests")]
         public static IEnumerable<TestCaseData> TestCaseSource()
         {
             const string schemaName = "ReplaceChars.json";
@@ -194,6 +205,12 @@ namespace ApiCodeGenerator.OpenApi.Tests
 
             yield return new TestCaseData(schema, replaceParmas, expectedInterface, expectedDto)
                 .SetName($"{{m}}(\"{replaceParmas}\")");
+        }
+
+        public static IEnumerable<TestCaseData> TemplateDirectorySource()
+        {
+            yield return new TestCaseData(new CSharpClientGeneratorSettings()).SetName($"{nameof(TemplateDirectory)}_Client");
+            yield return new TestCaseData(new CSharpControllerGeneratorSettings()).SetName($"{nameof(TemplateDirectory)}_Controller");
         }
 
         private static GenerationTask CreateGenerator(Mock<IFileProvider> fileProviderMock, string settingsJson, string schema)
