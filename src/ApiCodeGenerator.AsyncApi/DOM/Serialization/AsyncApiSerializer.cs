@@ -1,6 +1,8 @@
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using NJsonSchema.CodeGeneration;
 using NJsonSchema.Generation;
 using NJsonSchema.Yaml;
 using YamlDotNet.Serialization;
@@ -64,12 +66,12 @@ public static partial class AsyncApiSerializer
     /// <param name="data">YAML text.</param>
     /// <param name="documentPath"> Path to document. </param>
     /// <returns>AsyncApi document object model.</returns>
-    public static Task<AsyncApiDocument> FromYamlAsync(string data, string? documentPath)
+    public static async Task<AsyncApiDocument> FromYamlAsync(string data, string? documentPath)
     {
         try
         {
             JObject jObject = ParseYaml(data);
-            return FromJObject(jObject, documentPath);
+            return await FromJObject(jObject, documentPath);
         }
         catch (YamlException yamlEx)
         {
@@ -94,7 +96,7 @@ public static partial class AsyncApiSerializer
         return JObject.FromObject(yamlDocument)!;
     }
 
-    private static Task<AsyncApiDocument> FromJObject(JObject jObject, string? documentPath)
+    private static async Task<AsyncApiDocument> FromJObject(JObject jObject, string? documentPath)
     {
         var version = GetDocumentVersion(jObject);
         var majorVersion = new string(version.TakeWhile(x => x != '.').ToArray());
@@ -106,7 +108,9 @@ public static partial class AsyncApiSerializer
             _ => throw new AsyncApiSerializationException($"Version '{version}' not supported."),
         };
         doc.DocumentPath = documentPath;
-        return UpdateSchemaReferencesAsync(doc, serializer.ContractResolver);
+        await UpdateSchemaReferencesAsync(doc, serializer.ContractResolver);
+        BuildAsyncApiDescriminatorMapping(doc);
+        return doc;
     }
 
     private static string GetDocumentVersion(JObject jObject)
@@ -128,14 +132,38 @@ public static partial class AsyncApiSerializer
         return serializer.Deserialize<AsyncApiDocument>(jObject.CreateReader())!;
     }
 
-    private static async Task<AsyncApiDocument> UpdateSchemaReferencesAsync(AsyncApiDocument document, IContractResolver contractResolver)
-    {
-        await new AsyncApiReferenceUpdater(
+    private static async Task UpdateSchemaReferencesAsync(AsyncApiDocument document, IContractResolver contractResolver)
+        => await new AsyncApiReferenceUpdater(
             document,
             new JsonAndYamlReferenceResolver(new AsyncApiSchemaResolver(document, new SystemTextJsonSchemaGeneratorSettings())),
             contractResolver)
             .VisitAsync(document, default)
             .ConfigureAwait(false);
-        return document;
+
+    private static void BuildAsyncApiDescriminatorMapping(AsyncApiDocument document)
+    {
+        foreach (var schema in document.Components?.Schemas?.Values ?? [])
+        {
+            if (schema.SchemaFormat.StartsWith(AsyncApiSchema.AsyncApi))
+            {
+                var discriminatorPropName = schema.DiscriminatorObject?.PropertyName;
+                if (discriminatorPropName != null)
+                {
+                    var derivedSchemas = schema.GetDerivedSchemas(document);
+                    foreach (var item in derivedSchemas)
+                    {
+                        var derivedSchema = item.Key;
+                        if ((derivedSchema.Properties.TryGetValue(discriminatorPropName, out var discriminatorProp)
+                            || derivedSchema.AllOf?.FirstOrDefault(i => i != schema && i.Properties.ContainsKey(discriminatorPropName))?.Properties.TryGetValue(discriminatorPropName, out discriminatorProp) == true)
+                            && discriminatorProp.ExtensionData?.TryGetValue("const", out var constValue) == true)
+                        {
+                            var constValueStr = constValue!.ToString();
+                            discriminatorProp.ParentSchema!.Properties.Remove(discriminatorPropName);
+                            schema.DiscriminatorObject!.Mapping.Add(constValueStr, derivedSchema);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

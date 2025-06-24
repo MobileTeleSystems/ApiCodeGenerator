@@ -172,7 +172,7 @@ public class FunctionalTests
     public async Task GenerateDiscriminator()
     {
         var yaml = """
-        asyncapi: 2.0
+        asyncapi: 3.0.0
         info: { title: 'dd', version: '1.0' }
         components:
             schemas:
