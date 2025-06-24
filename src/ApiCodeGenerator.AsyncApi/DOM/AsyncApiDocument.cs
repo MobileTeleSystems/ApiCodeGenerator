@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NJsonSchema;
+using NJsonSchema.CodeGeneration;
 using NJsonSchema.Generation;
 using NJsonSchema.Yaml;
 using YamlDotNet.Serialization;
@@ -59,11 +60,13 @@ namespace ApiCodeGenerator.AsyncApi.DOM
         /// <param name="data">JSON text.</param>
         /// <param name="documentPath"> Path to document. </param>
         /// <returns>AsyncApi document object model.</returns>
-        public static Task<AsyncApiDocument> FromJsonAsync(string data, string? documentPath)
+        public static async Task<AsyncApiDocument> FromJsonAsync(string data, string? documentPath)
         {
             var document = JsonConvert.DeserializeObject<AsyncApiDocument>(data, JSONSERIALIZERSETTINGS)!;
             document.DocumentPath = documentPath;
-            return UpdateSchemaReferencesAsync(document);
+            await UpdateSchemaReferencesAsync(document);
+            BuildAsyncApiDescriminatorMapping(document);
+            return document;
         }
 
         /// <summary>
@@ -80,7 +83,7 @@ namespace ApiCodeGenerator.AsyncApi.DOM
         /// <param name="data">YAML text.</param>
         /// <param name="documentPath"> Path to document. </param>
         /// <returns>AsyncApi document object model.</returns>
-        public static Task<AsyncApiDocument> FromYamlAsync(string data, string? documentPath)
+        public static async Task<AsyncApiDocument> FromYamlAsync(string data, string? documentPath)
         {
             var deserializer = new DeserializerBuilder().Build();
             using var reader = new StringReader(data);
@@ -90,15 +93,40 @@ namespace ApiCodeGenerator.AsyncApi.DOM
             var serializer = JsonSerializer.Create(JSONSERIALIZERSETTINGS);
             var doc = jObject.ToObject<AsyncApiDocument>(serializer)!;
             doc.DocumentPath = documentPath;
-            return UpdateSchemaReferencesAsync(doc);
+            await UpdateSchemaReferencesAsync(doc);
+            BuildAsyncApiDescriminatorMapping(doc);
+            return doc;
         }
 
-        private static async Task<AsyncApiDocument> UpdateSchemaReferencesAsync(AsyncApiDocument document)
+        private static Task UpdateSchemaReferencesAsync(AsyncApiDocument document)
         {
-            await JsonSchemaReferenceUtilities.UpdateSchemaReferencesAsync(
+            return JsonSchemaReferenceUtilities.UpdateSchemaReferencesAsync(
                        document,
                        new JsonAndYamlReferenceResolver(new AsyncApiSchemaResolver(document, new SystemTextJsonSchemaGeneratorSettings())));
-            return document;
+        }
+
+        private static void BuildAsyncApiDescriminatorMapping(AsyncApiDocument document)
+        {
+            foreach (var schema in document.Components?.Schemas.Values ?? [])
+            {
+                var discriminatorPropName = schema.DiscriminatorObject?.PropertyName;
+                if (discriminatorPropName != null)
+                {
+                    var derivedSchemas = schema.GetDerivedSchemas(document);
+                    foreach (var item in derivedSchemas)
+                    {
+                        var derivedSchema = item.Key;
+                        if ((derivedSchema.Properties.TryGetValue(discriminatorPropName, out var discriminatorProp)
+                            || derivedSchema.AllOf?.FirstOrDefault(i => i != schema && i.Properties.ContainsKey(discriminatorPropName))?.Properties.TryGetValue(discriminatorPropName, out discriminatorProp) == true)
+                            && discriminatorProp.ExtensionData?.TryGetValue("const", out var constValue) == true)
+                        {
+                            var constValueStr = constValue!.ToString();
+                            discriminatorProp.ParentSchema!.Properties.Remove(discriminatorPropName);
+                            schema.DiscriminatorObject!.Mapping.Add(constValueStr, derivedSchema);
+                        }
+                    }
+                }
+            }
         }
     }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

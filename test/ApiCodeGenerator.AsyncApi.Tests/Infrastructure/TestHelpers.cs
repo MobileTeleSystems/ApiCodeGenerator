@@ -14,6 +14,146 @@ internal static partial class TestHelpers
     public static readonly string GENERATED_CODE = "[System.CodeDom.Compiler.GeneratedCode(\"NJsonSchema\", \"" + APICODEGEN_VERSION + "\")]";
     public static readonly string GENERATED_CODE_ATTRIBUTE = "[System.CodeDom.Compiler.GeneratedCode(\"ApiCodeGenerator.AsyncApi\", \"" + APICODEGEN_VERSION + "\")]";
 
+    public static readonly string JSON_INHERITANCE_CONVERTER = $$"""
+        {{GENERATED_CODE}}
+        [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Interface, AllowMultiple = true)]
+        internal class JsonInheritanceAttribute : System.Attribute
+        {
+            public JsonInheritanceAttribute(string key, System.Type type)
+            {
+                Key = key;
+                Type = type;
+            }
+
+            public string Key { get; }
+
+            public System.Type Type { get; }
+        }
+
+        {{GENERATED_CODE}}
+        public class JsonInheritanceConverter : Newtonsoft.Json.JsonConverter
+        {
+            internal static readonly string DefaultDiscriminatorName = "discriminator";
+
+            private readonly string _discriminatorName;
+
+            [System.ThreadStatic]
+            private static bool _isReading;
+
+            [System.ThreadStatic]
+            private static bool _isWriting;
+
+            public JsonInheritanceConverter()
+            {
+                _discriminatorName = DefaultDiscriminatorName;
+            }
+
+            public JsonInheritanceConverter(string discriminatorName)
+            {
+                _discriminatorName = discriminatorName;
+            }
+
+            public string DiscriminatorName { get { return _discriminatorName; } }
+
+            public override void WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
+            {
+                try
+                {
+                    _isWriting = true;
+
+                    var jObject = Newtonsoft.Json.Linq.JObject.FromObject(value, serializer);
+                    jObject.AddFirst(new Newtonsoft.Json.Linq.JProperty(_discriminatorName, GetSubtypeDiscriminator(value.GetType())));
+                    writer.WriteToken(jObject.CreateReader());
+                }
+                finally
+                {
+                    _isWriting = false;
+                }
+            }
+
+            public override bool CanWrite
+            {
+                get
+                {
+                    if (_isWriting)
+                    {
+                        _isWriting = false;
+                        return false;
+                    }
+                    return true;
+                }
+            }
+
+            public override bool CanRead
+            {
+                get
+                {
+                    if (_isReading)
+                    {
+                        _isReading = false;
+                        return false;
+                    }
+                    return true;
+                }
+            }
+
+            public override bool CanConvert(System.Type objectType)
+            {
+                return true;
+            }
+
+            public override object ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
+            {
+                var jObject = serializer.Deserialize<Newtonsoft.Json.Linq.JObject>(reader);
+                if (jObject == null)
+                    return null;
+
+                var discriminatorValue = jObject.GetValue(_discriminatorName);
+                var discriminator = discriminatorValue != null ? Newtonsoft.Json.Linq.Extensions.Value<string>(discriminatorValue) : null;
+                var subtype = GetObjectSubtype(objectType, discriminator);
+
+                var objectContract = serializer.ContractResolver.ResolveContract(subtype) as Newtonsoft.Json.Serialization.JsonObjectContract;
+                if (objectContract == null || System.Linq.Enumerable.All(objectContract.Properties, p => p.PropertyName != _discriminatorName))
+                {
+                    jObject.Remove(_discriminatorName);
+                }
+
+                try
+                {
+                    _isReading = true;
+                    return serializer.Deserialize(jObject.CreateReader(), subtype);
+                }
+                finally
+                {
+                    _isReading = false;
+                }
+            }
+
+            private System.Type GetObjectSubtype(System.Type objectType, string discriminator)
+            {
+                foreach (var attribute in System.Reflection.CustomAttributeExtensions.GetCustomAttributes<JsonInheritanceAttribute>(System.Reflection.IntrospectionExtensions.GetTypeInfo(objectType), true))
+                {
+                    if (attribute.Key == discriminator)
+                        return attribute.Type;
+                }
+
+                return objectType;
+            }
+
+            private string GetSubtypeDiscriminator(System.Type objectType)
+            {
+                foreach (var attribute in System.Reflection.CustomAttributeExtensions.GetCustomAttributes<JsonInheritanceAttribute>(System.Reflection.IntrospectionExtensions.GetTypeInfo(objectType), true))
+                {
+                    if (attribute.Type == objectType)
+                        return attribute.Key;
+                }
+
+                return objectType.Name;
+            }
+        }
+
+    """.Replace("\r", string.Empty);
+
     public static string GetAsyncApiPath(string schemaFile) => Path.Combine("asyncApi", schemaFile);
 
     public static async Task<TextReader> LoadApiDocumentAsync(string fileName)
@@ -41,10 +181,9 @@ internal static partial class TestHelpers
         Assert.That(actual, Is.EqualTo(expected));
     }
 
-    public static GeneratorContext CreateContext(string settingsJson, string schemaFile, Core.ExtensionManager.Extensions? extensions = null)
+    public static GeneratorContext CreateContext(string settingsJson, TextReader docReader, Core.ExtensionManager.Extensions? extensions = null)
     {
         var jReader = new JsonTextReader(new StringReader(settingsJson));
-        var docReader = File.OpenText(GetAsyncApiPath(schemaFile));
 
         return new GeneratorContext(
             (t, s, v) => s!.Deserialize(jReader, t),
@@ -54,6 +193,9 @@ internal static partial class TestHelpers
             DocumentReader = docReader,
         };
     }
+
+    public static GeneratorContext CreateContext(string settingsJson, string schemaFile, Core.ExtensionManager.Extensions? extensions = null)
+        => CreateContext(settingsJson, File.OpenText(GetAsyncApiPath(schemaFile)), extensions);
 
     public static string GetExpectedCode(string? expectedClientDeclartion, string? testOperResponseText, string @namespace = "TestNS", string? usings = null)
     {

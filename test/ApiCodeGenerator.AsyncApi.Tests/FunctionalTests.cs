@@ -169,6 +169,97 @@ public class FunctionalTests
         Assert.AreEqual(expected, actual);
     }
 
+    [Test]
+    public async Task GenerateDiscriminator()
+    {
+        var yaml = """
+        asyncapi: 2.0
+        info: { title: 'dd', version: '1.0' }
+        components:
+            schemas:
+                Pet:
+                    additionalProperties: false
+                    type: object
+                    discriminator: petType
+                    properties:
+                      name:
+                        type: string
+                      petType:
+                        type: string
+                    required:
+                    - name
+                    - petType
+                Cat:
+                    allOf:
+                    - $ref: '#/components/schemas/Pet'
+                    - type: object
+                      properties:
+                        huntingSkill:
+                          type: string
+                      required:
+                      - huntingSkill
+                      additionalProperties: false
+                StickInsect:
+                    allOf:
+                    - $ref: '#/components/schemas/Pet'
+                    - type: object
+                      properties:
+                        petType:
+                          const: StickBug
+                        color:
+                          type: string
+                      required:
+                      - color
+                      additionalProperties: false
+      """;
+        var settingsJson = $$"""
+        {
+            "Namespace": "TestNS",
+            "GenerateDataAnnotations": false,
+            "GenerateClientClasses": false
+        }
+        """;
+        var generationContext = CreateContext(settingsJson, new StringReader(yaml));
+        var generator = await CSharpClientContentGenerator.CreateAsync(generationContext);
+        var actual = generator.Generate();
+
+        var expectedDto = $$"""
+            [Newtonsoft.Json.JsonConverter(typeof(JsonInheritanceConverter), "petType")]
+            [JsonInheritanceAttribute("StickBug", typeof(StickInsect))]
+            [JsonInheritanceAttribute("Cat", typeof(Cat))]
+            {{GENERATED_CODE}}
+            public partial class Pet
+            {
+                [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Always)]
+                public string Name { get; set; }
+
+
+            }
+
+            {{GENERATED_CODE}}
+            public partial class Cat : Pet
+            {
+                [Newtonsoft.Json.JsonProperty("huntingSkill", Required = Newtonsoft.Json.Required.Always)]
+                public string HuntingSkill { get; set; }
+
+
+            }
+
+            {{GENERATED_CODE}}
+            public partial class StickInsect : Pet
+            {
+                [Newtonsoft.Json.JsonProperty("color", Required = Newtonsoft.Json.Required.Always)]
+                public string Color { get; set; }
+
+
+            }
+
+        {{JSON_INHERITANCE_CONVERTER}}
+        """.Replace("\r", string.Empty);
+        var expected = GetExpectedCode(null, expectedDto);
+        Assert.AreEqual(expected, actual);
+    }
+
     [TestCaseSource(nameof(TemplateDirectorySource))]
     public void TemplateDirectory<T>(T settings)
             where T : CSharpGeneratorBaseSettings
