@@ -3,15 +3,15 @@ namespace ApiCodeGenerator.OpenApi.Tests.Infrastructure
 {
     internal static partial class TestHelpers
     {
-        public const string NSWAG_VERSION = "14.0.2.0 (NJsonSchema v" + NJSON_VERSION + ")";
-        public const string NJSON_VERSION = "11.0.0.0 (Newtonsoft.Json v" + NEWTON_VERSION + ")";
+        public const string NSWAG_VERSION = NswagConstants.NSWAG_VERSION + ".0 (NJsonSchema v" + NJSON_VERSION + ")";
+        public const string NJSON_VERSION = NswagConstants.NJSONSCHEMA_VERSION + ".0 (Newtonsoft.Json v" + NEWTON_VERSION + ")";
         public const string NEWTON_VERSION = "13.0.0.0";
         public const string GENERATED_CODE = "[System.CodeDom.Compiler.GeneratedCode(\"NJsonSchema\", \"" + NSWAG_VERSION + "\")]";
         public const string GENERATED_CODE_ATTRIBUTE = "[System.CodeDom.Compiler.GeneratedCode(\"NSwag\", \"" + NSWAG_VERSION + "\")]";
 
         public const string TestOperResponseText = "    " + GENERATED_CODE + "\n" +
             "    public partial class TestOperResponse\n" +
-            "    {\n" +
+            "    {\n\n" +
             "        [Newtonsoft.Json.JsonProperty(\"id\", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]\n" +
             "        public int? Id { get; set; }\n" +
             "\n" +
@@ -68,13 +68,17 @@ namespace ApiCodeGenerator.OpenApi.Tests.Infrastructure
                 "#pragma warning disable 114 // Disable \"CS0114 '{derivedDto}.RaisePropertyChanged(String)' hides inherited member 'dtoBase.RaisePropertyChanged(String)'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword.\"\n" +
                 "#pragma warning disable 472 // Disable \"CS0472 The result of the expression is always 'false' since a value of type 'Int32' is never equal to 'null' of type 'Int32?'\n" +
                 "#pragma warning disable 612 // Disable \"CS0612 '...' is obsolete\"\n" +
+                "#pragma warning disable 649 // Disable \"CS0649 Field is never assigned to, and will always have its default value null\"\n" +
                 "#pragma warning disable 1573 // Disable \"CS1573 Parameter '...' has no matching param tag in the XML comment for ...\n" +
                 "#pragma warning disable 1591 // Disable \"CS1591 Missing XML comment for publicly visible type or member ...\"\n" +
                 "#pragma warning disable 8073 // Disable \"CS8073 The result of the expression is always 'false' since a value of type 'T' is never equal to 'null' of type 'T?'\"\n" +
                 "#pragma warning disable 3016 // Disable \"CS3016 Arrays as attribute arguments is not CLS-compliant\"\n" +
+                "#pragma warning disable 8600 // Disable \"CS8600 Converting null literal or possible null value to non-nullable type\"\n" +
+                "#pragma warning disable 8602 // Disable \"CS8602 Dereference of a possibly null reference\"\n" +
                 "#pragma warning disable 8603 // Disable \"CS8603 Possible null reference return\"\n" +
                 "#pragma warning disable 8604 // Disable \"CS8604 Possible null reference argument for parameter\"\n" +
                 "#pragma warning disable 8625 // Disable \"CS8625 Cannot convert null literal to non-nullable reference type\"\n" +
+                "#pragma warning disable 8765 // Disable \"CS8765 Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).\"\n" +
                 "\n" +
                $"namespace {@namespace}\n" +
                 "{\n" +
@@ -92,13 +96,17 @@ namespace ApiCodeGenerator.OpenApi.Tests.Infrastructure
                 "#pragma warning restore  114\n" +
                 "#pragma warning restore  472\n" +
                 "#pragma warning restore  612\n" +
+                "#pragma warning restore  649\n" +
                 "#pragma warning restore 1573\n" +
                 "#pragma warning restore 1591\n" +
                 "#pragma warning restore 8073\n" +
                 "#pragma warning restore 3016\n" +
+                "#pragma warning restore 8600\n" +
+                "#pragma warning restore 8602\n" +
                 "#pragma warning restore 8603\n" +
                 "#pragma warning restore 8604\n" +
-                "#pragma warning restore 8625";
+                "#pragma warning restore 8625\n" +
+                "#pragma warning restore 8765";
             return expected;
         }
 

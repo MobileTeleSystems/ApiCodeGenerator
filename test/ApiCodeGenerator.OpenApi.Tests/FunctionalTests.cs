@@ -162,7 +162,7 @@ namespace ApiCodeGenerator.OpenApi.Tests
             const string expectedDtoTemplate =
                 "    " + GENERATED_CODE + "\n" +
                 "    public partial class TestOperResponse\n" +
-                "    {{\n" +
+                "    {{\n\n" +
                 "        [Newtonsoft.Json.JsonProperty(\"{1}\", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]\n" +
                 "        public int? {0} {{ get; set; }}\n" +
                 "\n" +
@@ -173,7 +173,7 @@ namespace ApiCodeGenerator.OpenApi.Tests
                 "\n" +
                 "    " + GENERATED_CODE + "\n" +
                 "    public partial class ComplexType\n" +
-                "    {{\n" +
+                "    {{\n\n" +
                 "        [Newtonsoft.Json.JsonProperty(\"{1}\", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]\n" +
                 "        public int? {0} {{ get; set; }}\n" +
                 "\n" +

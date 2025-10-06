@@ -1,0 +1,22 @@
+﻿<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))"
+    Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../')))" />
+
+  <Target Name="GenerateConstants" BeforeTargets="CoreCompile">
+    <WriteLinesToFile File="$(IntermediateOutputPath)NswagConstants.g.cs" Overwrite="true"
+      Lines="namespace $(RootNamespace)
+{
+    internal static class NswagConstants
+    {
+        internal const string NSWAG_VERSION = &quot;$(NswagVersion)&quot;%3B
+        internal const string NJSONSCHEMA_VERSION = &quot;$(NJsonSchemaVersion)&quot;%3B
+    }
+}" />
+
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)NswagConstants.g.cs" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

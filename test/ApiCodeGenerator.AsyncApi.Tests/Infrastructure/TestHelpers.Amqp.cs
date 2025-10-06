@@ -51,7 +51,6 @@ internal static partial class TestHelpers
         string name,
         string payloadType,
         int identCnt,
-
         Exchange? exchange = null,
         OperationBase? operationBinding = null)
     {

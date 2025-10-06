@@ -164,7 +164,7 @@ public class FunctionalTests
         var expIntCode1 = GetExpectedClientCode($"I{className}pub", string.Join("\n", intExpOpersCode[..1]) + "\n", typeKind: "interface");
         var expIntCode2 = GetExpectedClientCode($"I{className}sub", string.Join("\n", intExpOpersCode[1..]) + "\n", typeKind: "interface");
 
-        var expected = GetExpectedCode(string.Join("\n", [expIntCode1, expClsCode1, expIntCode2, expClsCode2]) + "\n", null);
+        var expected = GetExpectedCode(string.Join("\n", new string[] { expIntCode1, expClsCode1, expIntCode2, expClsCode2 }) + "\n", null);
 
         Assert.AreEqual(expected, actual);
     }
@@ -230,27 +230,27 @@ public class FunctionalTests
             {{GENERATED_CODE}}
             public partial class Pet
             {
+
                 [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Always)]
                 public string Name { get; set; }
-
 
             }
 
             {{GENERATED_CODE}}
             public partial class Cat : Pet
             {
+
                 [Newtonsoft.Json.JsonProperty("huntingSkill", Required = Newtonsoft.Json.Required.Always)]
                 public string HuntingSkill { get; set; }
-
 
             }
 
             {{GENERATED_CODE}}
             public partial class StickInsect : Pet
             {
+
                 [Newtonsoft.Json.JsonProperty("color", Required = Newtonsoft.Json.Required.Always)]
                 public string Color { get; set; }
-
 
             }
 

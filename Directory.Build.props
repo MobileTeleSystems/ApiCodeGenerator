@@ -8,8 +8,8 @@
     <LangVersion>12</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <NswagVersion>14.0.2</NswagVersion>
-    <NJsonSchemaVersion>11.0.2</NJsonSchemaVersion>
+    <NswagVersion>14.6.1</NswagVersion>
+    <NJsonSchemaVersion>11.5.1</NJsonSchemaVersion>
   </PropertyGroup>
 
   <ItemGroup>

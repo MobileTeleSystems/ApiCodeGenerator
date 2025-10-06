@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="ApiCodeGenerator.ruleset" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/ApiCodeGenerator.AsyncApi.Tests/ApiCodeGenerator.AsyncApi.Tests.csproj" />
+    <Project Path="test/ApiCodeGenerator.Core.Tests/ApiCodeGenerator.Core.Tests.csproj" />
+    <Project Path="test/ApiCodeGenerator.OpenApi.Tests/ApiCodeGenerator.OpenApi.Tests.csproj" />
+    <File Path="test/Directory.Build.props" />
+  </Folder>
+  <Project Path="src/ApiCodeGenerator.Abstraction/ApiCodeGenerator.Abstraction.csproj" />
+  <Project Path="src/ApiCodeGenerator.AsyncApi/ApiCodeGenerator.AsyncApi.csproj" />
+  <Project Path="src/ApiCodeGenerator.Core/ApiCodeGenerator.Core.csproj" />
+  <Project Path="src/ApiCodeGenerator.MSBuild/ApiCodeGenerator.MSBuild.csproj">
+    <BuildDependency Project="src/ApiCodeGenerator.Core/ApiCodeGenerator.Core.csproj" />
+  </Project>
+  <Project Path="src/ApiCodeGenerator.OpenApi/ApiCodeGenerator.OpenApi.csproj" />
+</Solution>

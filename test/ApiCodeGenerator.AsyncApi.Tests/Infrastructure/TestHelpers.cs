@@ -9,7 +9,7 @@ internal static partial class TestHelpers
     public static readonly string VERSION = typeof(TestHelpers).Assembly.GetName().Version?.ToString() ?? string.Empty;
 
     public static readonly string NEWTON_VERSION = "13.0.0.0";
-    public static readonly string NJSON_VERSION = "11.0.2.0 (Newtonsoft.Json v" + NEWTON_VERSION + ")";
+    public static readonly string NJSON_VERSION = NswagConstants.NJSONSCHEMA_VERSION + ".0 (Newtonsoft.Json v" + NEWTON_VERSION + ")";
     public static readonly string APICODEGEN_VERSION = VERSION + " (NJsonSchema v" + NJSON_VERSION + ")";
     public static readonly string GENERATED_CODE = "[System.CodeDom.Compiler.GeneratedCode(\"NJsonSchema\", \"" + APICODEGEN_VERSION + "\")]";
     public static readonly string GENERATED_CODE_ATTRIBUTE = "[System.CodeDom.Compiler.GeneratedCode(\"ApiCodeGenerator.AsyncApi\", \"" + APICODEGEN_VERSION + "\")]";
@@ -247,7 +247,7 @@ internal static partial class TestHelpers
         var ident = new string(' ', identCnt);
         return ident + GENERATED_CODE + "\n" +
         ident + "public partial class LightMeasuredPayload\n" +
-        ident + "{\n" +
+        ident + "{\n\n" +
         ident + "    /// <summary>\n" +
         ident + "    /// Light intensity measured in lumens.\n" +
         ident + "    /// </summary>\n" +
@@ -261,7 +261,7 @@ internal static partial class TestHelpers
         "\n" +
         ident + GENERATED_CODE + "\n" +
         ident + "public partial class TurnOnOffPayload\n" +
-        ident + "{\n" +
+        ident + "{\n\n" +
         ident + "    /// <summary>\n" +
         ident + "    /// Whether to turn on or off the light.\n" +
         ident + "    /// </summary>\n" +
@@ -276,7 +276,7 @@ internal static partial class TestHelpers
         "\n" +
         ident + GENERATED_CODE + "\n" +
         ident + "public partial class DimLightPayload\n" +
-        ident + "{\n" +
+        ident + "{\n\n" +
         ident + "    /// <summary>\n" +
         ident + "    /// Percentage to which the light should be dimmed to.\n" +
         ident + "    /// </summary>\n" +
@@ -374,7 +374,7 @@ internal static partial class TestHelpers
     public static string GetAdditionalPropertiesCode(int identCnt)
     {
         var ident = new string(' ', identCnt);
-        return "\n\n\n" +
+        return "\n" +
         ident + "private System.Collections.Generic.IDictionary<string, object> _additionalProperties;\n" +
         "\n" +
         ident + "[Newtonsoft.Json.JsonExtensionData]\n" +
