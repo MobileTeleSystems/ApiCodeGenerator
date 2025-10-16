@@ -5,6 +5,10 @@
 .vs/
 bin/
 obj/
+binaries/
+dist/
+node_modules/
 
 *.user
 msbuild.binlog
+package-lock.json

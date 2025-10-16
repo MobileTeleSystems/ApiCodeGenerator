@@ -8,20 +8,19 @@ using System.Threading.Tasks;
 using ApiCodeGenerator.Abstraction;
 using ApiCodeGenerator.Core.Converters;
 using Newtonsoft.Json;
+using NJsonSchema.CodeGeneration;
 using NSwag;
 using NSwag.CodeGeneration;
-using NSwag.CodeGeneration.CSharp;
 using YamlDotNet.Core;
 
 namespace ApiCodeGenerator.OpenApi
 {
-    [Obsolete("Use ContentGeneratorBase2")]
-    public class ContentGeneratorBase<TContentGenerator, TGenerator, TSettings> : IContentGenerator
-        where TContentGenerator : ContentGeneratorBase<TContentGenerator, TGenerator, TSettings>, new()
-        where TGenerator : CSharpGeneratorBase
-        where TSettings : CSharpGeneratorBaseSettings, new()
+    public abstract class ContentGeneratorBase2<TContentGenerator, TGenerator, TSettings> : IContentGenerator
+        where TContentGenerator : ContentGeneratorBase2<TContentGenerator, TGenerator, TSettings>, new()
+        where TGenerator : class, IClientGenerator
+        where TSettings : class, new()
     {
-        protected ContentGeneratorBase()
+        protected ContentGeneratorBase2()
         {
         }
 
@@ -30,7 +29,7 @@ namespace ApiCodeGenerator.OpenApi
         protected GeneratorContext Context { get; private set; } = null!;
 
         /// <inheritdoc/>
-        public virtual string Generate() => Generator.GenerateFile();
+        public abstract string Generate();
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
         public static async Task<IContentGenerator> CreateAsync(GeneratorContext context)
@@ -39,14 +38,15 @@ namespace ApiCodeGenerator.OpenApi
             var apiDocument = await ReadAndProcessOpenApiDocument(context);
             var variables = GetAdditionalVariables(apiDocument);
             var settings = ParseSettings(context, variables);
-            var resolver = CSharpGeneratorBase.CreateResolverWithExceptionSchema(settings.CSharpGeneratorSettings, apiDocument);
-            var csharpGenerator = (TGenerator)Activator.CreateInstance(typeof(TGenerator), apiDocument, settings, resolver);
 
             var contentGenerator = new TContentGenerator
             {
-                Generator = csharpGenerator,
                 Context = context,
             };
+
+            var resolver = contentGenerator.CreateTypeResolver(settings, apiDocument);
+            var nswagGenerator = (TGenerator)Activator.CreateInstance(typeof(TGenerator), apiDocument, settings, resolver);
+            contentGenerator.Generator = nswagGenerator;
 
             return contentGenerator;
         }
@@ -150,5 +150,7 @@ namespace ApiCodeGenerator.OpenApi
             openApiDocument = InvokePreprocessors<OpenApiDocument>(openApiDocument, context.Preprocessors, context.DocumentPath, context.Logger);
             return openApiDocument;
         }
+
+        protected abstract TypeResolverBase CreateTypeResolver(TSettings settings, OpenApiDocument apiDocument);
     }
 }

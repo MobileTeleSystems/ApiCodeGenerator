@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net9.0;net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0;netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
     <!--Параметры пакета в Directory.Build.targets-->
@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ApiCodeGenerator.Abstraction\ApiCodeGenerator.Abstraction.csproj" />
+    <ProjectReference Include="..\ApiCodeGenerator.Core\ApiCodeGenerator.Core.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <Import Project="./ApiCodeGenerator.MSBuild.Console.targets" Condition="'$(TargetFramework)' != 'netstandard2.0'" />

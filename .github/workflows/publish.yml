@@ -26,6 +26,7 @@ jobs:
       PackageOutputDir: ".packages"
       Prerelease: ${{ github.event.inputs.prerelease || 'false' }}
       PushPackage: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event.inputs.push }}
+      NpmTokenExists: ${{ secrets.NPM_TOKEN != '' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +38,11 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v3.0.0
         with:
@@ -46,27 +52,42 @@ jobs:
         run: |
           ${GITVERSION_PATH}/dotnet-gitversion /output buildserver /output json
 
-      - name: Pack
+      - name: Pack Nuget
         run: |
           dotnet pack --nologo -o ${PackageOutputDir}  \
            -p:PackageVersion=${GitVersion_SemVer} \
-           -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} \
            -p:FileVersion=${GitVersion_MajorMinorPatch} \
            -p:AssemblyVersion=${GitVersion_AssemblySemVer} \
            -p:FileVersion=${GitVersion_MajorMinorPatch} \
            -p:Configuration=Release
+
+      - name: Pack Npm
+        run: |
+          ROOT=$(pwd)
+          cd src/ApiCodeGenerator.Npm
+          npm version ${GitVersion_FullSemVer} --no-git-tag-version
+          mkdir -p binaries
+          cp -f -r ../ApiCodeGenerator.MSBuild/bin/Release/net8.0/* ./binaries
+          npm pack --pack-destination ${ROOT}/${PackageOutputDir}
 
       - name: Nuget Push
         if: env.PushPackage == 'true'
         working-directory: ${{ env.PackageOutputDir }}
         run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
 
+      - name: Npm Push
+        if: env.PushPackage == 'true' && env.NpmTokenExists == 'true'
+        uses: JS-DevTools/npm-publish@v4
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: ${{ env.PackageOutputDir }}
+
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
           name: v${{ env.GitVersion_SemVer }}
           tag: v${{ env.GitVersion_SemVer }}
-          artifacts: ${{ env.PackageOutputDir }}/*.nupkg
+          artifacts: ${{ env.PackageOutputDir }}/*.nupkg,${{ env.PackageOutputDir }}/*.tgz
           generateReleaseNotes: true
           commit: ${{ env.GitVersion_Sha}}
           prerelease: ${{ env.Prerelease }}

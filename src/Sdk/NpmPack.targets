@@ -1,0 +1,102 @@
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask TaskName="JoinLines"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Lines ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <Separator ParameterType="System.String" Required="true" />
+      <Result ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+        Result = string.Join(Separator + Environment.NewLine, Lines.Select(l=>l.ItemSpec));
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="EnsureNpm" BeforeTargets="Pack" Condition="'$(AcgExtNpmName)' != ''">
+    <!-- Build Target:  Ensure Npm is installed -->
+    <Exec Command="npm --version" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Condition="'$(ErrorCode)' != '0'" Text="Npm are required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+  </Target>
+
+
+  <Target Name="_GenerateNpmPackageJsonContent">
+    <ItemGroup>
+      <AcgNpmPackageJsonLines Include="  &quot;name&quot;: &quot;$(AcgExtNpmScope)$(AcgExtNpmName)&quot;" />
+      <AcgNpmPackageJsonLines Include="  &quot;version&quot;: &quot;$(PackageVersion)&quot;" />
+      <AcgNpmPackageJsonLines Include="  &quot;description&quot;: &quot;$(PackageDescription)&quot;" />
+      <AcgNpmPackageJsonLines Include="  &quot;author&quot;: &quot;$(Authors)&quot;" Condition="'$(Authors)' != ''" />
+      <AcgNpmPackageJsonLines Include="  &quot;keywords&quot;: [ &quot;$([System.String]::Join('&quot;, &quot;', $([System.String]::new('$(PackageTags)').Split(' '))))&quot;]" Condition="'$(PackageTags)' != ''" />
+      <AcgNpmPackageJsonLines Include="  &quot;peerDependencies&quot;: {&quot;$(ACGNpmPackageScope)$(ACGNpmPackageName)&quot;: &quot;>=$(ACGPackageVersion)&quot;}" />
+      <AcgNpmPackageJsonLines Include="  &quot;scripts&quot;: {&quot;postinstall&quot;: &quot;node postinstall.js&quot;}" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateNpmPackageJson" DependsOnTargets="_GenerateNpmPackageJsonContent">
+    <JoinLines Lines="@(AcgNpmPackageJsonLines)" Separator=",">
+      <Output PropertyName="__AcgJoinedLines" TaskParameter="Result" />
+    </JoinLines>
+    <Message Text="$([System.Environment]::Version)" Importance="high" />
+    <WriteLinesToFile File="$(IntermediateOutputPath)package.json" Overwrite="true"
+      Lines="{
+    $(__AcgJoinedLines)
+    }" />
+    <ItemGroup>
+      <AcgNpmPackageFiles Include="$(IntermediateOutputPath)package.json" PackagePath="package.json" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateAcgJs">
+    <WriteLinesToFile File="$(IntermediateOutputPath)acg.js" Overwrite="true"
+      Lines="var dlls = [require('path').join(__dirname, 'binaries', '$(TargetFileName)')];
+module.exports = dlls;" />
+    <ItemGroup>
+      <AcgNpmPackageFiles Include="$(IntermediateOutputPath)acg.js" PackagePath="acg.js" />
+      <AcgNpmPackageFiles Include="$(MSBuildThisFileDirectory)postinstall.js" PackagePath="postinstall.js" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GetNpmBinaries" DependsOnTargets="GenerateToolsOutput">
+    <ItemGroup>
+      <AcgNpmPackageFiles Include="@(_PackageFiles->'%(FinalOutputPath)')"
+        PackagePath="$([System.IO.Path]::Combine('binaries', '%(_PackageFiles.TargetPath)'))"
+        Condition="'%(_PackageFiles.Tools)' == 'true'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="NpmPack"
+    DependsOnTargets="_GenerateNpmPackageJson;_GenerateAcgJs;_GetNpmBinaries"
+    AfterTargets="Pack"
+    Condition="'$(AcgExtNpmName)' != ''">
+    <PropertyGroup>
+      <NpmIntermediateOutputPath>$(IntermediateOutputPath)npm/</NpmIntermediateOutputPath>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(NpmIntermediateOutputPath)" />
+    <Copy SourceFiles="@(AcgNpmPackageFiles)"
+      DestinationFiles="$(NpmIntermediateOutputPath)%(PackagePath)" />
+
+    <Exec WorkingDirectory="$(NpmIntermediateOutputPath)"
+      Command="npm pack --pack-destination $(PackageOutputAbsolutePath) $(AcgNpmPackParams)"
+      CustomWarningRegularExpression="^npm WARN .*"
+      CustomErrorRegularExpression="^npm ERR! .*"
+      ConsoleToMsBuild="True">
+      <Output ItemName="AcgNpmPackOutput" TaskParameter="ConsoleOutput" />
+    </Exec>
+
+    <PropertyGroup>
+      <AcgNpmPackagePath>$(PackageOutputAbsolutePath)%(AcgNpmPackOutput.Identity)</AcgNpmPackagePath>
+    </PropertyGroup>
+
+    <Message Text="Successfully created package '$(AcgNpmPackagePath)'." />
+  </Target>
+
+</Project>

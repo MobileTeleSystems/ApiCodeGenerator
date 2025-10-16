@@ -40,11 +40,13 @@
       <OptionsFileDir>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetFullPath('%(CurrentOpenApiReference.Options)'))))</OptionsFileDir>
       <AcgNswagBase Condition="'$(AcgNswagBase)' == ''">$([MSBuild]::GetPathOfFileAbove('$(AcgNswagBaseFileName)', '$(OptionsFileDir)'))</AcgNswagBase>
       <__AcgNswagToolDir>%(CurrentOpenApiReference.AcgNswagToolDir)</__AcgNswagToolDir>
-      <AcgBuiltInExtensionAssemblies>%(CurrentOpenApiReference.AcgToolDir)/../ApiCodeGenerator.OpenApi.dll;%(AcgToolDir)/../ApiCodeGenerator.AsyncApi.dll;</AcgBuiltInExtensionAssemblies>
     </PropertyGroup>
-
+    <ItemGroup Condition="'@(AcgBuiltInExtensionAssemblies)' == ''">
+      <AcgBuiltInExtensionAssemblies Include="$(__AcgToolsDir)\ApiCodeGenerator.OpenApi.dll" />
+      <AcgBuiltInExtensionAssemblies Include="$(__AcgToolsDir)\ApiCodeGenerator.AsyncApi.dll" />
+    </ItemGroup>
     <ItemGroup>
-      <__acgBiExtAssemblies Include="$(AcgBuiltInExtensionAssemblies)" />
+      <__acgBiExtAssemblies Include="@(AcgBuiltInExtensionAssemblies)" />
       <__acgNotExistsBiExtAssemblies Include="@(__acgBiExtAssemblies)" Condition="!Exists(%(__acgBiExtAssemblies.Identity))" />
       <__acgExtAssemblies Include="@(__acgBiExtAssemblies)" Condition="Exists(%(__acgBiExtAssemblies.Identity))" />
       <__acgExtAssemblies Include="$(AcgExtensionAssemblies)" />

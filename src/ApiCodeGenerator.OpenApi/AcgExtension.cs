@@ -12,6 +12,7 @@ namespace ApiCodeGenerator
         {
             ["OpenApiToCSharpClient"] = CSharpClientContentGenerator.CreateAsync,
             ["OpenApiToCSharpController"] = CSharpControllerContentGenerator.CreateAsync,
+            ["OpenApiToTypeScriptClient"] = TypeScriptClientContentGenerator.CreateAsync,
         };
 
         public static Dictionary<string, Type> OperationGenerators { get; } = new()

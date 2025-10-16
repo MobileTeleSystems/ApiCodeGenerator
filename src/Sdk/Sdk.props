@@ -11,6 +11,8 @@
   <PropertyGroup>
     <ACGPackageId>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\..))))</ACGPackageId>
     <ACGPackageVersion>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..))))</ACGPackageVersion>
+    <ACGNpmPackageName>api-code-generator</ACGNpmPackageName>
+    <ACGNpmPackageScope></ACGNpmPackageScope>
   </PropertyGroup>
 
   <ItemGroup>

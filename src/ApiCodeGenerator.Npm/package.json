@@ -1,0 +1,26 @@
+{
+  "name": "api-code-generator",
+  "version": "3.1.0",
+  "author": {
+    "name": "Gennady Pundikov",
+    "email": "gvpundik@mts.ru"
+  },
+  "dependencies": {
+    "nswag": "14.6.1"
+  },
+  "bin": {
+    "acg": "acg.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MobileTeleSystems/ApiCodeGenerator"
+  },
+  "license": "MIT",
+  "scripts": {
+    "binaries": "dotnet publish ../ApiCodeGenerator.MSBuild/ApiCodeGenerator.MSBuild.csproj -c Release -f net8.0 -o binaries -p:CodeAnalysisRuleSet=",
+    "pack": "npm run binaries && mkdirp dist && npm  pack --pack-destination dist"
+  },
+  "devDependencies": {
+    "mkdirp": "^3.0.1"
+  }
+}
