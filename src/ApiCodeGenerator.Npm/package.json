@@ -18,7 +18,8 @@
   "license": "MIT",
   "scripts": {
     "binaries": "dotnet publish ../ApiCodeGenerator.MSBuild/ApiCodeGenerator.MSBuild.csproj -c Release -f net8.0 -o binaries -p:CodeAnalysisRuleSet=",
-    "pack": "npm run binaries && mkdirp dist && npm  pack --pack-destination dist"
+    "pack": "mkdirp dist && npm run pack-ci -- dist",
+    "pack-ci": "npm run binaries && npm  pack --pack-destination "
   },
   "devDependencies": {
     "mkdirp": "^3.0.1"

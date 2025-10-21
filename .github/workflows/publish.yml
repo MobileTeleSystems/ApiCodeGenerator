@@ -66,9 +66,7 @@ jobs:
           ROOT=$(pwd)
           cd src/ApiCodeGenerator.Npm
           npm version ${GitVersion_FullSemVer} --no-git-tag-version
-          mkdir -p binaries
-          cp -f -r ../ApiCodeGenerator.MSBuild/bin/Release/net8.0/* ./binaries
-          npm pack --pack-destination ${ROOT}/${PackageOutputDir}
+          npm run pack-ci -- ${ROOT}/${PackageOutputDir}
 
       - name: Nuget Push
         if: env.PushPackage == 'true'

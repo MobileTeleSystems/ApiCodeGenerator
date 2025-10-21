@@ -23,11 +23,15 @@
     <None Include="..\ApiCodeGenerator.Core\bin\$(Configuration)\netstandard2.0\ApiCodeGenerator.Core.dll" Link="ApiCodeGenerator.Core.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="..\ApiCodeGenerator.OpenApi\bin\$(Configuration)\netstandard2.0\ApiCodeGenerator.OpenApi.dll" CopyToPublishDirectory="Always" />
+    <None Include="..\ApiCodeGenerator.AsyncApi\bin\$(Configuration)\netstandard2.0\ApiCodeGenerator.AsyncApi.dll" CopyToPublishDirectory="Always" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ApiCodeGenerator.Abstraction\ApiCodeGenerator.Abstraction.csproj" />
     <ProjectReference Include="..\ApiCodeGenerator.Core\ApiCodeGenerator.Core.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ApiCodeGenerator.OpenApi\ApiCodeGenerator.OpenApi.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ApiCodeGenerator.AsyncApi\ApiCodeGenerator.AsyncApi.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <Import Project="./ApiCodeGenerator.MSBuild.Console.targets" Condition="'$(TargetFramework)' != 'netstandard2.0'" />

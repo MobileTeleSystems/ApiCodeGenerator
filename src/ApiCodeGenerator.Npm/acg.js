@@ -177,7 +177,7 @@ try {
       ref.nswag,
       ref.out,
       ...extensions.map(function (e) { return ["-e", e] }).flat(),
-      ...varsArg ? ["-v", varsArg] : v,
+      ...varsArg ? ["-v", varsArg] : varsArg,
       "--nswagTool",
       nswagTool.dir
     ]
