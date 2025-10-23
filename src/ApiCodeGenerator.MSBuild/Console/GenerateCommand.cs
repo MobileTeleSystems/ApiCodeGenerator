@@ -77,7 +77,7 @@ namespace ApiCodeGenerator.MSBuild
             AssemblyResolver.Register(context);
 
             var thisAssemblyPath = GetThisAssemblyPath();
-            AssemblyResolver.AddProbingPath(SelectToolsFrameworkFolder(nswagToolsPath ?? Path.Combine(thisAssemblyPath, NswagToolsDirName)));
+            AssemblyResolver.AddProbingPath(nswagToolsPath ?? Path.Combine(thisAssemblyPath, NswagToolsDirName));
             AssemblyResolver.AddProbingPath(thisAssemblyPath);
 
             var coreAsm = context.LoadFromAssemblyName(new AssemblyName("ApiCodeGenerator.Core"));
@@ -102,25 +102,6 @@ namespace ApiCodeGenerator.MSBuild
         {
             var thisAsmPath = Assembly.GetExecutingAssembly().Location;
             return Path.GetDirectoryName(thisAsmPath)!;
-        }
-
-        private static string[] SelectToolsFrameworkFolder(string path)
-        {
-            // Для NET >= 6 добавляем в список источников папку с фрейворком AspNetCore
-            var aspVersion = $"{Environment.Version.Major}.{Environment.Version.Minor}.*";
-            return new[]
-            {
-                path,
-                GetAspSharedFrameworkFolder(aspVersion),
-            };
-
-            static string GetAspSharedFrameworkFolder(string version)
-            {
-                var asm = Assembly.Load("System.Threading");
-                var shared = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(asm.Location)))!;
-                var asp = Path.Combine(shared, "Microsoft.AspNetCore.App");
-                return Directory.GetDirectories(asp, version).OrderBy(_ => _).Last();
-            }
         }
     }
 }

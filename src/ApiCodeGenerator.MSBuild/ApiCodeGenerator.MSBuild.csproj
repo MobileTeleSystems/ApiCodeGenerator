@@ -3,6 +3,7 @@
     <TargetFrameworks>net9.0;net8.0;netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <!--Параметры пакета в Directory.Build.targets-->
   </PropertyGroup>
 
@@ -32,6 +33,10 @@
     <ProjectReference Include="..\ApiCodeGenerator.Core\ApiCodeGenerator.Core.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\ApiCodeGenerator.OpenApi\ApiCodeGenerator.OpenApi.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\ApiCodeGenerator.AsyncApi\ApiCodeGenerator.AsyncApi.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup Label="Nswag prerequiries">
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="9.0.0" />
   </ItemGroup>
 
   <Import Project="./ApiCodeGenerator.MSBuild.Console.targets" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
