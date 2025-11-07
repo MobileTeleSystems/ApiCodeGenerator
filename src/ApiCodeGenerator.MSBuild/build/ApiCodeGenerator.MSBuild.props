@@ -39,11 +39,11 @@
     </_Temporary1>
     <_Temporary1 Include="@(_Temporary)">
       <OpenApiPath>%(DocumentDir)%(FileName).yml</OpenApiPath>
-      <Options>%(FullPath)</Options>
+      <Options>%(Identity)</Options>
     </_Temporary1>
     <_Temporary1 Include="@(_Temporary)">
       <OpenApiPath>%(DocumentDir)%(FileName).yaml</OpenApiPath>
-      <Options>%(FullPath)</Options>
+      <Options>%(Identity)</Options>
     </_Temporary1>
 
     <_OpenApiReference Include="@(_Temporary1 -&gt; '%(OpenApiPath)')"
