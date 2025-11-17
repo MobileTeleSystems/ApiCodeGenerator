@@ -27,6 +27,7 @@ jobs:
       Prerelease: ${{ github.event.inputs.prerelease || 'false' }}
       PushPackage: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event.inputs.push }}
       NpmTokenExists: ${{ secrets.NPM_TOKEN != '' }}
+      Platforms: "linux-x64 linux-musl-x64 osx-x64 osx-arm64"
 
     steps:
       - uses: actions/checkout@v4
@@ -65,8 +66,30 @@ jobs:
         run: |
           ROOT=$(pwd)
           cd src/ApiCodeGenerator.Npm
+          npm install
           npm version ${GitVersion_FullSemVer} --no-git-tag-version
           npm run pack-ci -- ${ROOT}/${PackageOutputDir}
+
+      - name: Pack Npm Binaries
+        run: |
+          ROOT=$(pwd)
+          for PLATFORM in ${{ env.Platforms }}; do
+            echo "Building for platform: $PLATFORM"
+            dotnet publish src/ApiCodeGenerator.MSBuild \
+              -c Release \
+              -f net8.0 \
+              -r $PLATFORM \
+              --self-contained \
+              -p:PublishTrimmed=false \
+              -o ./bin/publish/$PLATFORM
+
+            # Create tgz archive with platform name only
+            cd ./bin/publish/$PLATFORM
+            tar -czf $ROOT/${PackageOutputDir}/${PLATFORM}.tgz *
+            cd $ROOT
+
+            echo "Created archive: ${PLATFORM}.tgz"
+          done
 
       - name: Nuget Push
         if: env.PushPackage == 'true'

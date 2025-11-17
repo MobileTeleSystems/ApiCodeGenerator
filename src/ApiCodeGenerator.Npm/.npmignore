@@ -1,2 +1,8 @@
 msbuild.binlog
 dist/
+coverage/
+tsconfig.base.json
+tsconfig.json
+jest.config.js
+*.ts
+!*.d.ts
