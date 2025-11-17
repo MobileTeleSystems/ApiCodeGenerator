@@ -6,9 +6,12 @@
 bin/
 obj/
 binaries/
+coverage/
 dist/
 node_modules/
 
 *.user
 msbuild.binlog
 package-lock.json
+acg.js
+acg.d.ts
