@@ -71,7 +71,7 @@ namespace ApiCodeGenerator.MSBuild
 
         private IGenerationTaskFactory GetGenerationTaskFactory(string? nswagToolsPath)
         {
-            var context = new AssemblyLoadContext("Generator Context");
+            var context = AssemblyLoadContext.GetLoadContext(Assembly.GetCallingAssembly())!;
 
             // регистриуем процесс резолва сборок
             AssemblyResolver.Register(context);
