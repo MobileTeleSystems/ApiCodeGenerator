@@ -2,4 +2,6 @@
 using ApiCodeGenerator.MSBuild;
 
 var cmd = new GenerateCommand();
-await cmd.InvokeAsync(args);
+var exitCode = await cmd.InvokeAsync(args);
+
+return exitCode;

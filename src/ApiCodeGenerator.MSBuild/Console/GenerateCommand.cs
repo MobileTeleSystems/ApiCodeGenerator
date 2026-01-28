@@ -50,7 +50,7 @@ namespace ApiCodeGenerator.MSBuild
             this.SetHandler(ExecuteAsync);
         }
 
-        private Task ExecuteAsync(InvocationContext context)
+        private async Task ExecuteAsync(InvocationContext context)
         {
 #if DEBUG
             System.Diagnostics.Debugger.Launch();
@@ -66,12 +66,13 @@ namespace ApiCodeGenerator.MSBuild
             var factory = GetGenerationTaskFactory(nswagToolPath);
             AddExtesionsProbingPaths(extPaths);
             var generator = factory.Create(extPaths, new ConsoleLogAdapter());
-            return generator.ExecuteAsync(nswagFile, openApiFile, outFile, variables, baseNswagFile);
+            var result = await generator.ExecuteAsync(nswagFile, openApiFile, outFile, variables, baseNswagFile);
+            context.ExitCode = result ? 0 : 1;
         }
 
         private IGenerationTaskFactory GetGenerationTaskFactory(string? nswagToolsPath)
         {
-            var context = AssemblyLoadContext.GetLoadContext(Assembly.GetCallingAssembly())!;
+            var context = new AssemblyLoadContext("Generator Context");
 
             // регистриуем процесс резолва сборок
             AssemblyResolver.Register(context);

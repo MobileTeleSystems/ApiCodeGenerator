@@ -30,9 +30,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ApiCodeGenerator.Abstraction\ApiCodeGenerator.Abstraction.csproj" />
-    <ProjectReference Include="..\ApiCodeGenerator.Core\ApiCodeGenerator.Core.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\ApiCodeGenerator.OpenApi\ApiCodeGenerator.OpenApi.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\ApiCodeGenerator.AsyncApi\ApiCodeGenerator.AsyncApi.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup Label="Nswag prerequiries">

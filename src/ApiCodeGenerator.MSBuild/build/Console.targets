@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <UsingTask TaskName="AcgGetTools"
     TaskFactory="RoslynCodeTaskFactory"
@@ -191,8 +191,12 @@
     </ItemGroup>
     <Warning Condition="'@(__acgNotExistsBiExtAssemblies)' != ''" Text="File '%(__acgNotExistsBiExtAssemblies.Identity)' not found." />
     <Exec Command="%(CurrentOpenApiReference.Command)"
-      LogStandardErrorAsError="true"
-      CustomWarningRegularExpression="^WARNING .*"
-      StdErrEncoding="utf-8" />
+      StandardOutputImportance="low"
+      StdErrEncoding="utf-8"
+      IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ResultCode" />
+    </Exec>
+
+    <Error Condition="'$(_ResultCode)' != '0'" Text="Code generation failed!" />
   </Target>
 </Project>
