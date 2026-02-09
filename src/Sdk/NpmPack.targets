@@ -1,4 +1,4 @@
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <UsingTask TaskName="JoinLines"
     TaskFactory="RoslynCodeTaskFactory"
@@ -69,6 +69,8 @@ module.exports = dlls;" />
       <AcgNpmPackageFiles Include="@(_PackageFiles->'%(FinalOutputPath)')"
         PackagePath="$([System.IO.Path]::Combine('binaries', '%(_PackageFiles.TargetPath)'))"
         Condition="'%(_PackageFiles.Tools)' == 'true'" />
+
+      <AcgNpmPackageFiles Include="@(NuGetPackInput)" Condition="'%(NuGetPackInput.PackagePath)' == 'tools'" />
     </ItemGroup>
   </Target>
 
