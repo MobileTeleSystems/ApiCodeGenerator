@@ -22,6 +22,11 @@
     Outputs="%(OpenApiReference.OutputPath)">
     <Delete Files="%(OpenApiReference.OutputPath)" />
   </Target>
+
+  <!-- Генератор для TypeScript. Нужно имя содержащее TypeScript -->
+  <Target Name="GenerateAcgTypeScript" DependsOnTargets="GenerateAcg">
+  </Target>
+
   <Import Project="Console.targets" Condition="'$(AcgUseOwnProcess)' == 'true'" />
   <Import Project="Task.targets" Condition="'$(AcgUseOwnProcess)' != 'true'" />
 </Project>

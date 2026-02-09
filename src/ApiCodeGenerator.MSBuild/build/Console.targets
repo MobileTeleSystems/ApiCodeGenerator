@@ -1,4 +1,117 @@
-<Project>
+﻿<Project>
+
+  <UsingTask TaskName="AcgGetTools"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <NetRuntimes ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <AcgRuntimes ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <NswagRuntimes ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <AcgToolDir ParameterType="Microsoft.Build.Framework.ITaskItem" Output="true" />
+      <AcgNswagToolDir ParameterType="Microsoft.Build.Framework.ITaskItem" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <!-- For develop and testing code, use test\ApiCodeGenerator.Core.Tests\MSBuild\SelectGeneratorRuntimeTaskTest.cs -->
+<![CDATA[var netRuntimeRegex = new System.Text.RegularExpressions.Regex(@"^Microsoft\.NETCore\.App\s(\S+)\s\[[^\]]+\]$");
+            Func<string, int> parseMajorVersion = delegate (string versionString)
+            {
+                Exception innerEx = null;
+                try
+                {
+                    if (char.IsDigit(versionString.FirstOrDefault()))
+                    {
+                        return int.Parse(versionString.Substring(0, versionString.IndexOf('.')));
+                    }
+
+                    if (versionString.StartsWith("net"))
+                    {
+                        var pos = versionString.IndexOf('.');
+                        if (pos > 3)
+                        {
+                            return int.Parse(versionString.Substring(3, pos - 3));
+                        }
+                    }
+                    else if (versionString.StartsWith("Net"))
+                    {
+                        return int.Parse(versionString.Substring(3)) / 10;
+                    }
+                }
+                catch (FormatException ex)
+                {
+                    innerEx = ex;
+                }
+
+                throw new FormatException("Unknown version format: '" + versionString + "'.", innerEx);
+            };
+
+            Func<string, int> parseNetRuntimeMajorVersion = delegate (string versionString)
+            {
+                var match = netRuntimeRegex.Match(versionString);
+                if (match.Success)
+                {
+                    return parseMajorVersion(match.Groups[1].Value);
+                }
+
+                throw new FormatException(
+                    string.Format(
+                        "Invalid .NET runtime data format: '{0}'. Expected: 'Microsoft.NETCore.App 8.0.8 [/usr/share/dotnet/shared/Microsoft.NETCore.App]'",
+                        versionString));
+            };
+
+            try
+            {
+                var runtimes = NetRuntimes
+                    .Select(r => parseNetRuntimeMajorVersion(r.ItemSpec))
+                    .OrderByDescending(v => v)
+                    .ToArray();
+
+                var map = AcgRuntimes
+                    .Join(
+                        NswagRuntimes,
+                        l => parseMajorVersion(l.ItemSpec),
+                        r => parseMajorVersion(r.ItemSpec),
+                        (l, r) =>
+                        {
+                            var v = parseMajorVersion(l.ItemSpec);
+                            return new
+                            {
+                                Version = v,
+                                Acg = l,
+                                Nswag = r,
+                                Net = runtimes.Contains(v) ? v : runtimes.FirstOrDefault(r => r > v),
+                            };
+                        })
+                    .OrderByDescending(i => i.Version);
+
+                var selected =
+                    map.FirstOrDefault(i => i.Version == i.Net)
+                    ?? map.FirstOrDefault(i => i.Version < i.Net);
+
+                if (selected != null)
+                {
+                    AcgToolDir = selected.Acg;
+                    AcgNswagToolDir = selected.Nswag;
+
+                    return true;
+                }
+
+                AcgToolDir = null;
+                AcgNswagToolDir = null;
+                Log.LogErrorFromException(new Exception("No compatible runtime version found."), false, false, null);
+                return false;
+            }
+            catch (FormatException ex)
+            {
+                Log.LogErrorFromException(ex, false, false, null);
+                Success = false;
+            }]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
   <!-- Запрашиваем список установленных сред выполнения .NET и выбираем поддерживаемую -->
   <Target Name="SelectGeneratorRuntime"
     BeforeTargets="_GetMetadataForOpenApiReferences">
@@ -11,28 +124,35 @@
     </Exec>
 
     <ItemGroup>
-      <_AcgDotnetRuntimes>
-        <!-- ищем установленный рантайм приложений заменяя его префикс и берем первые 6 символов
-        чтоб получить например net6.0 -->
-        <Folder>$([System.String]::Copy('%(Identity)').Replace('Microsoft.NETCore.App ','net').Substring(0,6))</Folder>
-        <NswagFolder>$([System.String]::Copy('%(Identity)').Replace('Microsoft.NETCore.App ', 'Net').Substring(0,6).Replace('.', ''))</NswagFolder>
-      </_AcgDotnetRuntimes>
-      <ttt Include="@(_AcgDotnetRuntimes)">
-        <t>$(__AcgToolsDir)%(_AcgDotnetRuntimes.Folder)</t>
-      </ttt>
-      <_AcgTools Include="$(__AcgToolsDir)%(_AcgDotnetRuntimes.Folder)"
-        Condition="Exists('$(__AcgToolsDir)%(_AcgDotnetRuntimes.Folder)') AND Exists('$(NSwagDir)../%(_AcgDotnetRuntimes.NswagFolder)')">
-        <NswagToolDir>$(NSwagDir)../%(_AcgDotnetRuntimes.NswagFolder)</NswagToolDir>
-      </_AcgTools>
-      <!-- проставляем на все ссылки пути к инструментам -->
-      <OpenApiReference>
-        <AcgToolDir>%(_AcgTools.Identity)</AcgToolDir>
-        <AcgNswagToolDir>%(_AcgTools.NswagToolDir)</AcgNswagToolDir>
-      </OpenApiReference>
+      <_AcgDotnetRuntimes Remove="@(_AcgDotnetRuntimes)" Condition="!$([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App '))" />
+
+      <_AcgRuntimes Include="$(__AcgToolsDir)**\ApiCodeGenerator.MSBuild.exe" />
+      <_AcgRuntimes Include="$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_AcgRuntimes.Identity)))))">
+        <Path>$([System.IO.Path]::GetDirectoryName(%(_AcgRuntimes.Identity)))</Path>
+      </_AcgRuntimes>
+      <_AcgRuntimes Remove="$(__AcgToolsDir)**\ApiCodeGenerator.MSBuild.exe" />
+
+      <_AcgNswagRuntimes Include="$(NSwagDir)../**/dotnet-nswag.exe" />
+      <_AcgNswagRuntimes Include="$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_AcgNswagRuntimes.Identity)))))">
+        <Path>$([System.IO.Path]::GetDirectoryName(%(_AcgNswagRuntimes.Identity)))</Path>
+      </_AcgNswagRuntimes>
+      <_AcgNswagRuntimes Remove="$(NSwagDir)../**/dotnet-nswag.exe" />
     </ItemGroup>
 
-    <Error Condition="!Exists('%(_AcgTools.NswagToolDir)')"
-      Text="Nswag tools not found (%(_AcgTools.NswagToolDir)). ApiCodeGenerator tool in %(_AcgTools.Identity)" />
+    <AcgGetTools NetRuntimes="@(_AcgDotnetRuntimes)" AcgRuntimes="@(_AcgRuntimes)" NswagRuntimes="@(_AcgNswagRuntimes)">
+      <Output TaskParameter="AcgToolDir" ItemName="_AcgTargetToolDir" />
+      <Output TaskParameter="AcgNswagToolDir" ItemName="_AcgTargetNswagToolDir" />
+    </AcgGetTools>
+
+    <ItemGroup>
+      <!-- проставляем на все ссылки пути к инструментам. Установка сразу двух не срабатывает -->
+      <OpenApiReference>
+        <AcgToolDir>%(_AcgTargetToolDir.Path)</AcgToolDir>
+      </OpenApiReference>
+      <OpenApiReference>
+        <AcgNswagToolDir>%(_AcgTargetNswagToolDir.Path)</AcgNswagToolDir>
+      </OpenApiReference>
+    </ItemGroup>
   </Target>
 
   <Target Name="GenerateAcg">
@@ -40,16 +160,18 @@
       <OptionsFileDir>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetFullPath('%(CurrentOpenApiReference.Options)'))))</OptionsFileDir>
       <AcgNswagBase Condition="'$(AcgNswagBase)' == ''">$([MSBuild]::GetPathOfFileAbove('$(AcgNswagBaseFileName)', '$(OptionsFileDir)'))</AcgNswagBase>
       <__AcgNswagToolDir>%(CurrentOpenApiReference.AcgNswagToolDir)</__AcgNswagToolDir>
-      <AcgBuiltInExtensionAssemblies>%(CurrentOpenApiReference.AcgToolDir)/../ApiCodeGenerator.OpenApi.dll;%(AcgToolDir)/../ApiCodeGenerator.AsyncApi.dll;</AcgBuiltInExtensionAssemblies>
     </PropertyGroup>
-
+    <ItemGroup Condition="'@(AcgBuiltInExtensionAssemblies)' == ''">
+      <AcgBuiltInExtensionAssemblies Include="$(__AcgToolsDir)\ApiCodeGenerator.OpenApi.dll" />
+      <AcgBuiltInExtensionAssemblies Include="$(__AcgToolsDir)\ApiCodeGenerator.AsyncApi.dll" />
+    </ItemGroup>
     <ItemGroup>
-      <__acgBiExtAssemblies Include="$(AcgBuiltInExtensionAssemblies)" />
+      <__acgBiExtAssemblies Include="@(AcgBuiltInExtensionAssemblies)" />
       <__acgNotExistsBiExtAssemblies Include="@(__acgBiExtAssemblies)" Condition="!Exists(%(__acgBiExtAssemblies.Identity))" />
       <__acgExtAssemblies Include="@(__acgBiExtAssemblies)" Condition="Exists(%(__acgBiExtAssemblies.Identity))" />
       <__acgExtAssemblies Include="$(AcgExtensionAssemblies)" />
       <CurrentOpenApiReference>
-        <Command>dotnet %(AcgToolDir)/ApiCodeGenerator.MSBuild.dll "%(FullPath)" "%(Options)" "%(OutputPath)" -v "Namespace=%(Namespace),ClassName=%(ClassName)</Command>
+        <Command>dotnet --roll-forward Major %(AcgToolDir)/ApiCodeGenerator.MSBuild.dll "%(FullPath)" "%(Options)" "%(OutputPath)" -v "Namespace=%(Namespace),ClassName=%(ClassName)</Command>
       </CurrentOpenApiReference>
       <CurrentOpenApiReference>
         <Command Condition="'%(CurrentOpenApiReference.Variables)' != ''">%(Command),%(CurrentOpenApiReference.Variables)</Command>
@@ -69,7 +191,12 @@
     </ItemGroup>
     <Warning Condition="'@(__acgNotExistsBiExtAssemblies)' != ''" Text="File '%(__acgNotExistsBiExtAssemblies.Identity)' not found." />
     <Exec Command="%(CurrentOpenApiReference.Command)"
-      LogStandardErrorAsError="true"
-      CustomWarningRegularExpression="^WARNING .*" />
+      StandardOutputImportance="low"
+      StdErrEncoding="utf-8"
+      IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ResultCode" />
+    </Exec>
+
+    <Error Condition="'$(_ResultCode)' != '0'" Text="Code generation failed!" />
   </Target>
 </Project>

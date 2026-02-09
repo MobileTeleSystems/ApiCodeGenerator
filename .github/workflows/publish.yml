@@ -26,6 +26,8 @@ jobs:
       PackageOutputDir: ".packages"
       Prerelease: ${{ github.event.inputs.prerelease || 'false' }}
       PushPackage: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event.inputs.push }}
+      NpmTokenExists: ${{ secrets.NPM_TOKEN != '' }}
+      Platforms: "linux-x64 linux-musl-x64 osx-x64 osx-arm64 win-x64"
 
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +39,11 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v3.0.0
         with:
@@ -46,27 +53,62 @@ jobs:
         run: |
           ${GITVERSION_PATH}/dotnet-gitversion /output buildserver /output json
 
-      - name: Pack
+      - name: Pack Nuget
         run: |
           dotnet pack --nologo -o ${PackageOutputDir}  \
            -p:PackageVersion=${GitVersion_SemVer} \
-           -p:AssemblyVersion=${GitVersion_AssemblySemFileVer} \
            -p:FileVersion=${GitVersion_MajorMinorPatch} \
            -p:AssemblyVersion=${GitVersion_AssemblySemVer} \
            -p:FileVersion=${GitVersion_MajorMinorPatch} \
            -p:Configuration=Release
+
+      - name: Pack Npm
+        run: |
+          ROOT=$(pwd)
+          cd src/ApiCodeGenerator.Npm
+          npm install
+          npm version ${GitVersion_FullSemVer} --no-git-tag-version
+          npm run pack-ci -- ${ROOT}/${PackageOutputDir}
+
+      - name: Pack Npm Binaries
+        run: |
+          ROOT=$(pwd)
+          for PLATFORM in ${{ env.Platforms }}; do
+            echo "Building for platform: $PLATFORM"
+            dotnet publish src/ApiCodeGenerator.MSBuild \
+              -c Release \
+              -f net8.0 \
+              -r $PLATFORM \
+              --self-contained \
+              -p:PublishTrimmed=false \
+              -o ./bin/publish/$PLATFORM
+
+            # Create tgz archive with platform name only
+            cd ./bin/publish/$PLATFORM
+            tar -czf $ROOT/${PackageOutputDir}/${PLATFORM}.tgz *
+            cd $ROOT
+
+            echo "Created archive: ${PLATFORM}.tgz"
+          done
 
       - name: Nuget Push
         if: env.PushPackage == 'true'
         working-directory: ${{ env.PackageOutputDir }}
         run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
 
+      - name: Npm Push
+        if: env.PushPackage == 'true' && env.NpmTokenExists == 'true'
+        uses: JS-DevTools/npm-publish@v4
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: ${{ env.PackageOutputDir }}
+
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
           name: v${{ env.GitVersion_SemVer }}
           tag: v${{ env.GitVersion_SemVer }}
-          artifacts: ${{ env.PackageOutputDir }}/*.nupkg
+          artifacts: ${{ env.PackageOutputDir }}/*.nupkg,${{ env.PackageOutputDir }}/*.tgz
           generateReleaseNotes: true
           commit: ${{ env.GitVersion_Sha}}
           prerelease: ${{ env.Prerelease }}

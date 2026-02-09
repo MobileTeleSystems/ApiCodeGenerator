@@ -8,7 +8,7 @@
     <description>Adds API client generation to the project based on the NSwag file and the API description document.</description>
     <repository type="git" url="$repository$" />
     <dependencies>
-      <dependency id="Microsoft.Extensions.ApiDescription.Client" version="5.0" />
+      <dependency id="Microsoft.Extensions.ApiDescription.Client" version="10.0" />
       <dependency id="NSwag.MSBuild" version="$nswagVersion$" />
     </dependencies>
     <license type="file">LICENSE</license>

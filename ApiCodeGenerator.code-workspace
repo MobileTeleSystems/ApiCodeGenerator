@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "src/ApiCodeGenerator.Npm"
+		}
+	],
+	"settings": {
+		"autoHide.hideSideBarsOnDebug": false,
+		"autoHide.hidePanelOnDebug": false
+	}
+}

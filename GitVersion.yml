@@ -1,13 +1,13 @@
+next-version: "3.2.0"
 mode: ContinuousDelivery
 branches:
-    main:
-        mode: ContinuousDeployment
-        label: ''
-        increment: Patch
-        is-main-branch: true
-    develop:
-        label: rc
+  main:
+    mode: ContinuousDeployment
+    label: ""
+    increment: Patch
+    is-main-branch: true
+  develop:
+    label: rc
 ignore:
   sha: []
 merge-message-formats: {}
-

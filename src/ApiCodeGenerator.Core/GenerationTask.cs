@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
@@ -91,8 +91,9 @@ namespace ApiCodeGenerator.Core
             vars["OutFile"] = outFilePath;
             var roVariables = new ReadOnlyDictionary<string, string>(vars);
 
-            LogMessage("Values of nswag variables");
-            LogMessage(string.Join(Environment.NewLine, vars.Select(_ => $"\t[{_.Key}] = {_.Value}")));
+            LogMessage("Values of nswag variables: {0}{1}",
+                Environment.NewLine,
+                string.Join(Environment.NewLine, vars.Select(_ => $"\t[{_.Key}] = {_.Value}")));
 
             JObject? baseNswagDocument = LoadBaseNswag(baseNswagFilePath);
             var nswagDocument = _documentFactory.LoadNswagDocument(nswagFilePath, roVariables, baseNswagDocument);
@@ -110,18 +111,18 @@ namespace ApiCodeGenerator.Core
                 return false;
             }
 
-            var context = await CreateGenerationContext(nswagDocument, nswagFilePath, roVariables);
-
-            if (context is not null)
+            try
             {
-                if (context.DocumentReader is null)
-                {
-                    Log?.LogWarning(NotSetInput, nswagFilePath, "Source not set. Skip generation.");
-                    return true;
-                }
+                var context = await CreateGenerationContext(nswagDocument, nswagFilePath, roVariables);
 
-                try
+                if (context is not null)
                 {
+                    if (context.DocumentReader is null)
+                    {
+                        Log?.LogWarning(NotSetInput, nswagFilePath, "Source not set. Skip generation.");
+                        return true;
+                    }
+
                     LogMessage($"Use settings: {generatorSettings.Key}");
                     var contentGenerator = await contentGeneratorFactory.Invoke(context);
 
@@ -137,14 +138,14 @@ namespace ApiCodeGenerator.Core
                     {
                         Log?.LogError(WriteFileErr, outFilePath, "Unable write file. Error: {0}", ex.Message);
                     }
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Log?.LogError(GenerationErr, nswagFilePath, ex.Message);
-                    return false;
-                }
 
-                return true;
+                    return true;
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Log?.LogError(GenerationErr, nswagFilePath, ex.Message);
+                return false;
             }
 
             return false;
