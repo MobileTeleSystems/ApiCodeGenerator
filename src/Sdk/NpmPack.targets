@@ -70,7 +70,9 @@ module.exports = dlls;" />
         PackagePath="$([System.IO.Path]::Combine('binaries', '%(_PackageFiles.TargetPath)'))"
         Condition="'%(_PackageFiles.Tools)' == 'true'" />
 
-      <AcgNpmPackageFiles Include="@(NuGetPackInput)" Condition="'%(NuGetPackInput.PackagePath)' == 'tools'" />
+      <AcgNpmPackageFiles Include="@(_PackageFiles)"
+        PackagePath="$([System.IO.Path]::Combine('binaries', $([System.IO.Path]::GetRelativePath('$(TargetDir)', '%(_PackageFiles.Identity)'))))"
+        Condition="'%(_PackageFiles.Tools)' == 'true' AND '%(_PackageFiles.FinalOutputPath)' == ''" />
     </ItemGroup>
   </Target>
 
