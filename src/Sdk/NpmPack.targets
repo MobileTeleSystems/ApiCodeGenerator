@@ -71,7 +71,7 @@ module.exports = dlls;" />
         Condition="'%(_PackageFiles.Tools)' == 'true'" />
 
       <AcgNpmPackageFiles Include="@(_PackageFiles)"
-        PackagePath="$([System.IO.Path]::Combine('binaries', $([System.IO.Path]::GetRelativePath('$(TargetDir)', '%(_PackageFiles.Identity)'))))"
+        PackagePath="$([System.IO.Path]::Combine('binaries', $([MSBuild]::MakeRelative('$([System.IO.Path]::GetFullPath($(TargetDir)))', '%(_PackageFiles.FullPath)'))))"
         Condition="'%(_PackageFiles.Tools)' == 'true' AND '%(_PackageFiles.FinalOutputPath)' == ''" />
     </ItemGroup>
   </Target>
