@@ -126,17 +126,18 @@
     <ItemGroup>
       <_AcgDotnetRuntimes Remove="@(_AcgDotnetRuntimes)" Condition="!$([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App '))" />
 
-      <_AcgRuntimes Include="$(__AcgToolsDir)**\ApiCodeGenerator.MSBuild.exe" />
+      <_AcgRuntimes Include="$(__AcgToolsDir)**\ApiCodeGenerator.MSBuild.dll" />
       <_AcgRuntimes Include="$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_AcgRuntimes.Identity)))))">
         <Path>$([System.IO.Path]::GetDirectoryName(%(_AcgRuntimes.Identity)))</Path>
       </_AcgRuntimes>
-      <_AcgRuntimes Remove="$(__AcgToolsDir)**\ApiCodeGenerator.MSBuild.exe" />
+      <_AcgRuntimes Remove="netstandard2.0" />
+      <_AcgRuntimes Remove="$(__AcgToolsDir)**\ApiCodeGenerator.MSBuild.dll" />
 
-      <_AcgNswagRuntimes Include="$(NSwagDir)../**/dotnet-nswag.exe" />
+      <_AcgNswagRuntimes Include="$(NSwagDir)../**/dotnet-nswag.dll" />
       <_AcgNswagRuntimes Include="$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_AcgNswagRuntimes.Identity)))))">
         <Path>$([System.IO.Path]::GetDirectoryName(%(_AcgNswagRuntimes.Identity)))</Path>
       </_AcgNswagRuntimes>
-      <_AcgNswagRuntimes Remove="$(NSwagDir)../**/dotnet-nswag.exe" />
+      <_AcgNswagRuntimes Remove="$(NSwagDir)../**/dotnet-nswag.dll" />
     </ItemGroup>
 
     <AcgGetTools NetRuntimes="@(_AcgDotnetRuntimes)" AcgRuntimes="@(_AcgRuntimes)" NswagRuntimes="@(_AcgNswagRuntimes)">
