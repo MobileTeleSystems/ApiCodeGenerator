@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using NJsonSchema.CodeGeneration;
@@ -15,6 +15,10 @@ namespace ApiCodeGenerator.OpenApi
             => Generator.GenerateFile();
 
         protected override TypeResolverBase CreateTypeResolver(TypeScriptClientGeneratorSettings settings, OpenApiDocument apiDocument)
-            => new TypeScriptTypeResolver(settings.TypeScriptGeneratorSettings);
+        {
+            var resolver = new TypeScriptTypeResolver(settings.TypeScriptGeneratorSettings);
+            resolver.RegisterSchemaDefinitions(apiDocument.Definitions);
+            return resolver;
+        }
     }
 }

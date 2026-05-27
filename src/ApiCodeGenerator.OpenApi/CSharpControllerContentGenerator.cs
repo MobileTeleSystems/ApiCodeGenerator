@@ -6,7 +6,7 @@ using NSwag.CodeGeneration.CSharp;
 namespace ApiCodeGenerator.OpenApi
 {
     internal sealed class CSharpControllerContentGenerator
-        : ContentGeneratorBase<CSharpControllerContentGenerator, CSharpControllerGenerator, CSharpControllerGeneratorSettings>
+        : CSharpContentGenerator<CSharpControllerContentGenerator, CSharpControllerGenerator, CSharpControllerGeneratorSettings>
     {
     }
 }

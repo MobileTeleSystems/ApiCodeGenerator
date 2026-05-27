@@ -11,6 +11,7 @@ dist/
 node_modules/
 
 *.user
+*.lscache
 msbuild.binlog
 package-lock.json
 acg.js
