@@ -15,7 +15,4 @@
     <ACGNpmPackageScope></ACGNpmPackageScope>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="ApiCodeGenerator.MSBuild" Version="[$(ACGPackageVersion),4)" PrivateAssets="contentfiles;analyzers" />
-  </ItemGroup>
 </Project>

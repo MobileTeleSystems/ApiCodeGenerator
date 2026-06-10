@@ -1,4 +1,4 @@
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
   <Import Project="NpmPack.targets" />
 
@@ -34,6 +34,16 @@
       <NuGetPackageId>$(ACGPackageId)</NuGetPackageId>
       <NuGetPackageVersion>$(ACGPackageVersion)</NuGetPackageVersion>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' == 'true'">
+    <PackageReference Remove="ApiCodeGenerator.MSBuild" />
+    <PackageReference Include="ApiCodeGenerator.MSBuild" VersionOverride="[$(ACGPackageVersion),4)" PrivateAssets="contentfiles;analyzers" />
+
+  </ItemGroup>
+  <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' != 'true'">
+    <PackageReference Remove="ApiCodeGenerator.MSBuild" />
+    <PackageReference Include="ApiCodeGenerator.MSBuild" Version="[$(ACGPackageVersion),4)" PrivateAssets="contentfiles;analyzers" />
   </ItemGroup>
 
   <Target Name="GeneratePropsFile" BeforeTargets="_GetPackageFiles">
