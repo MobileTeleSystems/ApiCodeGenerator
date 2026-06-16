@@ -72,7 +72,7 @@ namespace ApiCodeGenerator.Abstraction
             {
                 var current = GetLoadContext();
                 var ev = assemblyLoadContextType.GetEvent("Resolving");
-                ev.AddEventHandler(current, new Func<object, AssemblyName, Assembly?>(AssemblyLoadContext_Resolving));
+                ev.AddEventHandler(current, AssemblyLoadContext_Resolving);
             }
         }
 
@@ -86,7 +86,7 @@ namespace ApiCodeGenerator.Abstraction
             {
                 var current = GetLoadContext();
                 var ev = assemblyLoadContextType.GetEvent("Resolving");
-                ev.RemoveEventHandler(current, new Func<object, AssemblyName, Assembly?>(AssemblyLoadContext_Resolving));
+                ev.RemoveEventHandler(current, AssemblyLoadContext_Resolving);
             }
         }
 

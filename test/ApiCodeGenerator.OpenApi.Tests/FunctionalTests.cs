@@ -28,7 +28,7 @@ namespace ApiCodeGenerator.OpenApi.Tests
             var fileProviderMock = new Mock<IFileProvider>(MockBehavior.Strict);
             fileProviderMock.Setup(f => f.Exists(It.IsAny<string>())).Returns(true);
             fileProviderMock.Setup(p => p.WriteAllTextAsync(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback<string, string>((path, content) => generatedText = content);
+                .Callback<string, string>((_, content) => generatedText = content);
 
             var task = CreateGenerator(fileProviderMock, settingsJson, schema);
 

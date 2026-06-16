@@ -12,7 +12,7 @@ public class ExtensionLoaderTests
         var extensions = ExtensionLoader.LoadExtensions(
             [nameof(AcgExt1), nameof(AcgExt2)],
             a => Assembly.GetCallingAssembly(),
-            (ap, asm) => GetType().GetNestedType(ap, BindingFlags.NonPublic) ?? throw new InvalidOperationException($"Type {ap} not found"));
+            (ap, _) => GetType().GetNestedType(ap, BindingFlags.NonPublic) ?? throw new InvalidOperationException($"Type {ap} not found"));
 
         Assert.That(extensions.CodeGenerators, Does.ContainKey("gen1"));
         Assert.AreEqual(new ContentGeneratorFactory(Gen1).Method, extensions.CodeGenerators["gen1"].Method);
